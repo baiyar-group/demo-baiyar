@@ -17,7 +17,7 @@ get_header(); ?>
 
 <main id="main" class="site-main">
 
-  <section class="baiyar-hero-photo relative flex min-h-[520px] items-end overflow-hidden md:min-h-[640px]">
+  <section class="baiyar-hero-photo relative flex min-h-[100svh] items-end overflow-hidden">
     <img
       src="<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/hero-photo.jpg"
       alt="<?php esc_attr_e('Seseorang berjalan santai memakai sneakers Lapik di jalan setapak.', 'baiyar-storefront'); ?>"
@@ -25,7 +25,7 @@ get_header(); ?>
       fetchpriority="high"
     />
     <span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-brand-700/10"></span>
-    <div class="relative w-full px-6 pb-14 pt-32 md:px-16 md:pb-20">
+    <div class="relative w-full px-6 pb-20 pt-32 md:px-16 md:pb-28">
       <div class="max-w-xl">
         <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-100"><?php esc_html_e('Koleksi harian', 'baiyar-storefront'); ?></p>
         <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
