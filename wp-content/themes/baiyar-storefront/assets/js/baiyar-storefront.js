@@ -74,9 +74,61 @@
     }
   }
 
+  // The cart drawer: Storefront already renders the mini-cart markup (#site-header-cart's
+  // .widget_shopping_cart), just hidden off-screen and shown on :hover. style.css turns that same
+  // markup into a fixed slide-out panel; this only drives when it's open, independent of WooCommerce's
+  // AJAX fragment refresh (which replaces the mini-cart's *inner* HTML on every add/remove, so the
+  // overlay/close button live outside that subtree instead of inside it).
+  function wireCartDrawer() {
+    var headerCart = document.getElementById("site-header-cart");
+    if (!headerCart) {
+      return;
+    }
+
+    var overlay = document.createElement("div");
+    overlay.className = "baiyar-cart-overlay";
+    var closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "baiyar-cart-close";
+    closeButton.setAttribute("aria-label", "Tutup keranjang");
+    closeButton.innerHTML = "&times;";
+    document.body.appendChild(overlay);
+    document.body.appendChild(closeButton);
+
+    function open() {
+      headerCart.classList.add("baiyar-cart-open");
+      document.body.classList.add("baiyar-cart-drawer-open");
+    }
+    function close() {
+      headerCart.classList.remove("baiyar-cart-open");
+      document.body.classList.remove("baiyar-cart-drawer-open");
+    }
+
+    headerCart.addEventListener("click", function (event) {
+      var link = event.target.closest(".cart-contents");
+      if (!link) {
+        return;
+      }
+      event.preventDefault();
+      headerCart.classList.contains("baiyar-cart-open") ? close() : open();
+    });
+    overlay.addEventListener("click", close);
+    closeButton.addEventListener("click", close);
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        close();
+      }
+    });
+
+    if (window.jQuery) {
+      window.jQuery(document.body).on("added_to_cart", open);
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     markRevealTargets();
     observeReveal();
     wireAddToCartPulse();
+    wireCartDrawer();
   });
 })();

@@ -286,6 +286,227 @@ ul.products li.product .price,
   }
 }
 
+/* ---------- Cart drawer ----------
+   Storefront already renders the mini-cart markup (#site-header-cart .widget_shopping_cart) - by
+   default it's shoved off-screen with `left:-999em` and shown on :hover. This turns the same markup
+   into a real slide-out panel, opened only by the .baiyar-cart-open class (see baiyar-storefront.js),
+   never by hover - WooCommerce's AJAX fragment refresh keeps rewriting the inner HTML on every add/
+   remove, so the drawer surface itself (not its contents) is what carries the open state. */
+
+.site-header-cart .widget_shopping_cart {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  height: 100vh !important;
+  width: min(420px, 92vw) !important;
+  background: #ffffff;
+  box-shadow: var(--baiyar-shadow-xl);
+  z-index: 1001;
+  padding: 72px 28px 28px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 320ms var(--baiyar-ease);
+  font-size: 1rem !important;
+}
+
+.site-header-cart:hover .widget_shopping_cart {
+  /* cancel Storefront's hover reveal - only .baiyar-cart-open below controls visibility */
+  left: auto;
+}
+
+.site-header-cart.baiyar-cart-open .widget_shopping_cart {
+  transform: translateX(0);
+}
+
+.widget_shopping_cart_content::before {
+  content: "Keranjang";
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.woocommerce-mini-cart.cart_list {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  /* Storefront's own CSS collapses this to 0 height and only expands it on :hover - we open the
+     drawer with a class instead, so force it open regardless. */
+  height: auto !important;
+}
+
+.woocommerce-mini-cart-item {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--baiyar-neutral-100);
+}
+
+.woocommerce-mini-cart-item img {
+  width: 64px !important;
+  height: 64px !important;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  border-radius: var(--baiyar-radius-md);
+  background: var(--baiyar-neutral-50);
+  flex-shrink: 0;
+  margin: 0 !important;
+  float: none !important;
+  position: static !important;
+}
+
+.woocommerce-mini-cart-item a:not(.remove) {
+  flex: 1;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  color: var(--baiyar-ink);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  float: none !important;
+}
+
+.woocommerce-mini-cart-item .quantity {
+  display: block;
+  width: 100%;
+  color: var(--baiyar-neutral-500);
+  font-size: 0.8125rem;
+  margin: 4px 0 0 34px;
+  position: static !important;
+}
+
+.woocommerce-mini-cart-item a.remove {
+  position: static !important;
+  order: -1;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--baiyar-neutral-100);
+  color: var(--baiyar-neutral-600) !important;
+  text-decoration: none;
+  font-size: 0.875rem;
+  line-height: 1;
+  float: none !important;
+  top: auto !important;
+}
+
+.woocommerce-mini-cart-item a.remove:hover {
+  background: var(--baiyar-error-100);
+  color: var(--baiyar-error-700) !important;
+}
+
+.woocommerce-mini-cart__total.total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  padding-top: 16px;
+  border-top: 1px solid var(--baiyar-neutral-200);
+  margin: 0 0 20px;
+}
+
+.woocommerce-mini-cart__buttons.buttons {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+}
+
+.woocommerce-mini-cart__buttons.buttons a.button {
+  flex: 1;
+  text-align: center;
+  padding: 12px 16px !important;
+  border-radius: var(--baiyar-radius-md) !important;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 180ms var(--baiyar-ease);
+}
+
+.woocommerce-mini-cart__buttons.buttons a.button:hover {
+  transform: translateY(-2px);
+}
+
+.woocommerce-mini-cart__buttons.buttons a.button:not(.checkout) {
+  background: #ffffff !important;
+  color: var(--baiyar-ink) !important;
+  border: 1px solid var(--baiyar-neutral-300) !important;
+}
+
+.woocommerce-mini-cart__buttons.buttons a.button.checkout {
+  background: var(--baiyar-brand-gradient) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.woocommerce-mini-cart__empty-message {
+  color: var(--baiyar-neutral-600);
+}
+
+.baiyar-cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.4);
+  /* Must stay below 999: Storefront's own <header class="site-header"> has position:relative and
+     z-index:999, which traps the drawer (nested inside it, position:fixed, z-index:1001) in that
+     header's stacking context - the drawer's "1001" only wins against siblings *inside* the header, not
+     against this overlay, which is a direct <body> child competing at the outer/top-level context. Any
+     value at or above 999 here would render above the header and block clicks on the drawer's own
+     buttons. */
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms var(--baiyar-ease);
+}
+
+.baiyar-cart-close {
+  position: fixed;
+  top: 20px;
+  z-index: 1002;
+  right: calc(min(420px, 92vw) - 44px);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--baiyar-neutral-100);
+  color: var(--baiyar-ink);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition:
+    opacity 320ms var(--baiyar-ease),
+    transform 320ms var(--baiyar-ease);
+}
+
+body.baiyar-cart-drawer-open {
+  overflow: hidden;
+}
+
+body.baiyar-cart-drawer-open .baiyar-cart-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.baiyar-cart-drawer-open .baiyar-cart-close {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+@media (max-width: 480px) {
+  .baiyar-cart-close {
+    right: 12px;
+  }
+}
+
 /* ---------- Focus ring (same rule as apps/landing and apps/checkout) ---------- */
 
 a:focus-visible,
@@ -321,130 +542,10 @@ ul.wc_payment_methods li {
   float: none !important;
 }
 
-/* ---------- Announcement bar ---------- */
-
-.baiyar-announce {
-  background: var(--baiyar-ink);
-  color: #ffffff;
-  text-align: center;
-  padding: 10px 16px;
-}
-
-.baiyar-announce p {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-/* ---------- Homepage: hero ---------- */
-
-.baiyar-home {
-  max-width: none;
-  width: 100%;
-}
-
-.baiyar-hero {
-  display: flex;
-  align-items: center;
-  gap: 48px;
-  background: linear-gradient(180deg, var(--baiyar-neutral-50) 0%, #ffffff 100%);
-  padding: 72px max(5vw, 24px);
-  flex-wrap: wrap;
-}
-
-.baiyar-hero__text {
-  flex: 1 1 420px;
-  max-width: 560px;
-}
-
-.baiyar-hero__eyebrow {
-  color: var(--baiyar-brand-600);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
-  margin: 0 0 12px;
-}
-
-.baiyar-hero h1 {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  line-height: 1.15;
-  margin: 0 0 16px;
-}
-
-.baiyar-hero__lede {
-  color: var(--baiyar-neutral-600);
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  margin: 0 0 28px;
-}
-
-.baiyar-hero__actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.baiyar-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 13px 24px;
-  border-radius: var(--baiyar-radius-md);
-  font-weight: 600;
-  text-decoration: none;
-  transition:
-    transform 180ms var(--baiyar-ease),
-    box-shadow 180ms var(--baiyar-ease),
-    filter 180ms var(--baiyar-ease);
-}
-
-.baiyar-btn--primary {
-  background: var(--baiyar-brand-gradient);
-  color: #ffffff !important;
-  box-shadow: var(--baiyar-shadow-md);
-}
-
-.baiyar-btn--secondary {
-  background: #ffffff;
-  color: var(--baiyar-ink) !important;
-  border: 1px solid var(--baiyar-neutral-300);
-}
-
-.baiyar-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--baiyar-shadow-lg);
-  filter: brightness(1.03);
-}
-
-.baiyar-hero__art {
-  flex: 1 1 360px;
-  position: relative;
-  min-height: 280px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.baiyar-hero__blob {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 420px;
-  height: 420px;
-  max-width: 90%;
-  max-height: 90%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--baiyar-brand-100), var(--baiyar-brand-50) 60%, transparent 72%);
-}
+/* ---------- Homepage: hero shoe float (hero itself is Tailwind utilities in front-page.php; this
+   keyframe is kept here since it's not worth a Tailwind config detour for one animation) ---------- */
 
 .baiyar-hero__shoe {
-  position: relative;
-  width: min(420px, 85%);
-  height: auto;
-  border-radius: var(--baiyar-radius-xl);
-  box-shadow: var(--baiyar-shadow-lg);
   animation: baiyar-float 5s ease-in-out infinite;
 }
 
@@ -458,133 +559,9 @@ ul.wc_payment_methods li {
   }
 }
 
-/* ---------- Homepage: trust bar ---------- */
-
-.baiyar-trust {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 40px max(5vw, 24px);
-  border-bottom: 1px solid var(--baiyar-neutral-200);
-}
-
-.baiyar-trust__item {
-  text-align: center;
-}
-
-.baiyar-trust__icon {
-  display: inline-flex;
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--baiyar-brand-50);
-  font-size: 1.125rem;
-  margin-bottom: 10px;
-}
-
-.baiyar-trust__item p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--baiyar-neutral-700);
-  font-weight: 500;
-}
-
-/* ---------- Homepage: category tiles ---------- */
-
-.baiyar-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 48px max(5vw, 24px);
-}
-
-.baiyar-category-tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 320px;
-  border-radius: var(--baiyar-radius-xl);
-  padding: 28px;
-  text-decoration: none;
-  background-size: cover;
-  background-position: center;
-  box-shadow: var(--baiyar-shadow-md);
-  overflow: hidden;
-  transition:
-    transform 220ms var(--baiyar-ease),
-    box-shadow 220ms var(--baiyar-ease);
-}
-
-.baiyar-category-tile::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(11, 15, 25, 0) 40%, rgba(11, 15, 25, 0.68) 100%);
-}
-
-.baiyar-category-tile--sneakers {
-  background-image: url("assets/img/tile-sneakers.svg");
-}
-
-.baiyar-category-tile--sandal {
-  background-image: url("assets/img/tile-sandal.svg");
-}
-
-.baiyar-category-tile:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--baiyar-shadow-xl);
-}
-
-.baiyar-category-tile__label,
-.baiyar-category-tile__cta {
-  position: relative;
-  color: #ffffff !important;
-}
-
-.baiyar-category-tile__label {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.baiyar-category-tile__cta {
-  font-size: 0.875rem;
-  font-weight: 500;
-  opacity: 0.92;
-}
-
-/* ---------- Homepage: best sellers + section heading ---------- */
-
-.baiyar-section-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 max(5vw, 24px);
-}
-
-.baiyar-section-heading h2 {
-  font-size: 1.5rem;
-}
-
-.baiyar-section-heading a {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.baiyar-bestsellers {
-  padding: 24px 0 56px;
-}
+/* ---------- Best sellers grid (WooCommerce's own <li class="product"> markup via
+   wc_get_template_part('content','product') - not something we can hand Tailwind classes to, since we
+   don't write that HTML) ---------- */
 
 .baiyar-bestseller-grid {
   max-width: 1120px;
@@ -634,167 +611,6 @@ ul.wc_payment_methods li {
   padding: 4px 10px;
   border-radius: var(--baiyar-radius-sm);
   z-index: 1;
-}
-
-/* ---------- Homepage: brand story ---------- */
-
-.baiyar-story {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 24px max(5vw, 24px) 80px;
-  text-align: center;
-}
-
-.baiyar-story h2 {
-  font-size: 1.75rem;
-  margin-bottom: 16px;
-}
-
-.baiyar-story p {
-  color: var(--baiyar-neutral-600);
-  font-size: 1.0625rem;
-  line-height: 1.7;
-}
-
-/* ---------- Footer ---------- */
-
-.baiyar-footer {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 56px max(5vw, 24px) 32px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 48px;
-  justify-content: space-between;
-}
-
-.baiyar-footer__newsletter {
-  flex: 1 1 320px;
-  max-width: 380px;
-}
-
-.baiyar-footer__newsletter h2 {
-  font-size: 1.25rem;
-  margin: 0 0 8px;
-}
-
-.baiyar-footer__newsletter p {
-  color: var(--baiyar-neutral-600);
-  font-size: 0.875rem;
-  margin: 0 0 16px;
-}
-
-.baiyar-footer__form {
-  display: flex;
-  gap: 8px;
-}
-
-.baiyar-footer__form input[type="email"] {
-  flex: 1;
-  padding: 11px 14px;
-  border: 1px solid var(--baiyar-neutral-300);
-  border-radius: var(--baiyar-radius-md);
-  font-size: 0.875rem;
-}
-
-.baiyar-footer__form button {
-  padding: 11px 20px;
-  border: none;
-  border-radius: var(--baiyar-radius-md);
-  background: var(--baiyar-brand-gradient);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 180ms var(--baiyar-ease);
-}
-
-.baiyar-footer__form button:hover {
-  transform: translateY(-2px);
-}
-
-.baiyar-footer__columns {
-  display: flex;
-  gap: 48px;
-  flex-wrap: wrap;
-  flex: 2 1 420px;
-  justify-content: flex-end;
-}
-
-.baiyar-footer__column h3 {
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--baiyar-neutral-500);
-  margin: 0 0 14px;
-}
-
-.baiyar-footer__column ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.baiyar-footer__column li {
-  margin-bottom: 10px;
-}
-
-.baiyar-footer__column a {
-  color: var(--baiyar-ink);
-  text-decoration: none;
-  font-size: 0.9375rem;
-}
-
-.baiyar-footer__column a:hover {
-  color: var(--baiyar-brand-600);
-}
-
-.baiyar-footer__payment {
-  margin: 0 0 6px;
-}
-
-.baiyar-footer__methods {
-  color: var(--baiyar-neutral-500);
-  font-size: 0.8125rem;
-  margin: 0;
-}
-
-.baiyar-footer__social {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid var(--baiyar-neutral-200);
-}
-
-.baiyar-footer__social span {
-  font-size: 0.8125rem;
-  color: var(--baiyar-neutral-500);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.baiyar-footer__social a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--baiyar-neutral-100);
-  color: var(--baiyar-ink);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition:
-    background 180ms var(--baiyar-ease),
-    transform 180ms var(--baiyar-ease);
-}
-
-.baiyar-footer__social a:hover {
-  background: var(--baiyar-brand-100);
-  transform: translateY(-2px);
 }
 
 /* ---------- Reduced motion ---------- */

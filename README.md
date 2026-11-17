@@ -57,7 +57,14 @@ currency/gateway settings every time, so it's always idempotent rather than sile
   short pulse and the header cart icon bumps; sections fade up into view on scroll. Every animation is
   skipped under `prefers-reduced-motion`, per that skill's rule. `front-page.php` is the homepage
   template (hero/trust-bar/category-tiles/best-sellers/story); `template-parts/footer-content.php` is
-  the newsletter + link columns + social row, hooked in ahead of Storefront's own credit line.
+  the newsletter + link columns + social row, hooked in ahead of Storefront's own credit line. The
+  mini-cart dropdown Storefront already ships (hidden off-screen, shown on hover) is restyled into a
+  real slide-out drawer, opened by click (not hover) and auto-opened on add-to-cart.
+  - Markup we write ourselves (front-page.php, the footer, the announcement bar, the cart drawer's
+    overlay/close button) uses **Tailwind utility classes**, loaded via the Play CDN (no Node/build step
+    in this repo) with a token-mapped config in `functions.php`. WooCommerce's own generated markup
+    (the product loop, the mini-cart widget, block checkout) still gets plain CSS in `style.css` -
+    we don't write that HTML, so there's nothing to put a utility class on.
 - `bin/product-images/` - generated SVG product photos (sneaker/sandal line art on Baiyar-token
   backdrops), sideloaded onto each product by `setup.sh` via `wp media import --featured_image`.
 - `bin/setup.sh` - provisions the store via WP-CLI (run through the `wpcli` compose service).
@@ -94,6 +101,21 @@ method itself. Keep this split if either brand's content changes.
   simplest fix was a plain wrapper `<div>` instead of `<ul class="products">`, keeping only the inner
   `wc_get_template_part('content', 'product')` card markup. An orphaned `<li>` outside a real `<ul>` then
   needs its own `list-style: none`.
+- Storefront's `<header class="site-header">` has `position:relative; z-index:999` of its own. A
+  `position:fixed` drawer nested inside it (the mini-cart) gets trapped in *that* stacking context - its
+  own higher z-index only wins against siblings inside the header, not against something like our
+  overlay `<div>` appended straight to `<body>`. The overlay has to stay below 999, not just below the
+  drawer's own z-index, or it silently blocks clicks on the drawer's own buttons.
+- Tailwind's Play CDN JIT-scans the whole rendered page for class names and generates a matching utility
+  for anything that looks like one - including class names it didn't author. WooCommerce puts
+  `columns-N` on the product grid `<ul>` (N = the catalog "columns" setting); Tailwind has its own
+  `columns-N` utility (CSS `columns: N`, multi-column *text* layout) and generated it for that same
+  class, splitting every product card's text into narrow newspaper-style columns. Fixed by blocklisting
+  `columns-1` through `columns-6` in `tailwind.config`. Also disabled Tailwind's Preflight (base CSS
+  reset) entirely - it rewrites element defaults (lists, forms, etc.) that Storefront/WooCommerce's own
+  CSS assumes are still there; standard practice when adding Tailwind to a site with existing CSS. When
+  a Tailwind-rendered page looks subtly wrong, check for a class-name collision with existing markup
+  before assuming it's a specificity issue.
 
 ## Status
 

@@ -19,6 +19,47 @@ add_action('wp_enqueue_scripts', function () {
         $theme->get('Version'),
     );
 
+    // Tailwind's Play CDN: this theme has no Node/build step (docker compose + wp-cli only), so this is
+    // the pragmatic choice over a compiled pipeline. Markup we author ourselves (front-page.php,
+    // footer-content.php, the announcement bar/cart-drawer chrome below) uses Tailwind utility classes
+    // directly; style.css still carries the handful of overrides WooCommerce's own generated markup
+    // (product loop, mini-cart widget, block checkout) needs, since we don't write that HTML ourselves.
+    wp_enqueue_script('tailwind-play', 'https://cdn.tailwindcss.com/3.4.17', [], null, false);
+    // Tailwind config (token-mapped from packages/ui/src/tokens.ts), attached as an inline script
+    // guaranteed to print right after the CDN script - `tailwind.config` must exist before Tailwind
+    // scans the page.
+    wp_add_inline_script('tailwind-play', "tailwind.config = {
+        // Preflight (Tailwind's base CSS reset) rewrites default element styles site-wide; disabled so
+        // it doesn't reset the base styles WooCommerce/Storefront's own CSS assumes are still there.
+        corePlugins: { preflight: false },
+        // Tailwind's JIT scans the whole page's rendered HTML for class names and generates a utility
+        // for anything that matches its naming convention - including class names it didn't author.
+        // WooCommerce puts \"columns-N\" on the product grid <ul> (N = the catalog columns setting,
+        // nothing to do with Tailwind), which collides with Tailwind's own `columns-N` utility
+        // (CSS `columns: N`, multi-column text layout) and was splitting every product card's text into
+        // narrow newspaper-style columns. Block the ones WooCommerce can produce (1-6).
+        blocklist: ['columns-1', 'columns-2', 'columns-3', 'columns-4', 'columns-5', 'columns-6'],
+        theme: {
+            extend: {
+                colors: {
+                    brand: { 50: '#eff4ff', 100: '#dbe6fe', 400: '#5b93f5', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                    ink: '#0f172c',
+                },
+                fontFamily: { sans: ['Satoshi', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+                borderRadius: { xs: '6px', sm: '8px', md: '10px', lg: '14px', xl: '18px', '2xl': '24px' },
+                boxShadow: {
+                    sm: '0 1px 2px rgba(15,23,42,.04)',
+                    md: '0 4px 12px rgba(15,23,42,.06)',
+                    lg: '0 12px 32px rgba(15,23,42,.08)',
+                    xl: '0 20px 48px rgba(15,23,42,.10)',
+                },
+                backgroundImage: {
+                    'brand-gradient': 'linear-gradient(180deg, #1d4ed8 0%, #3b82f6 50%, #2563eb 100%)',
+                },
+            },
+        },
+    };", 'after');
+
     wp_enqueue_script(
         'baiyar-storefront-script',
         get_stylesheet_directory_uri() . '/assets/js/baiyar-storefront.js',
@@ -80,7 +121,7 @@ function baiyar_inline_logo($height = 20)
 // Announcement bar: wp_body_open fires right after <body>, before any theme markup, so this always
 // lands above the header regardless of Storefront's own hook names.
 add_action('wp_body_open', function () {
-    echo '<div class="baiyar-announce"><p>'
+    echo '<div class="bg-ink px-4 py-2.5 text-center"><p class="m-0 text-[0.8125rem] font-medium tracking-wide text-white">'
         . esc_html__('Checkout ini pakai Baiyar sungguhan - coba bayar dengan QRIS, VA atau e-wallet.', 'baiyar-storefront')
         . '</p></div>';
 });
