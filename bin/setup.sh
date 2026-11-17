@@ -48,7 +48,23 @@ echo "Activating the Baiyar plugin stub..."
 wp plugin activate baiyar-for-woocommerce
 
 echo "Enabling the Baiyar gateway at checkout..."
-wp eval "update_option('woocommerce_baiyar_settings', ['enabled' => 'yes', 'title' => 'Baiyar', 'description' => 'Pay with QRIS, virtual account, e-wallet or a retail outlet.']);"
+wp eval "update_option('woocommerce_baiyar_settings', ['enabled' => 'yes', 'title' => 'Baiyar', 'description' => 'Bayar dengan QRIS, virtual account, e-wallet, atau gerai retail.']);"
+
+echo "Installing the Indonesian language packs (WordPress, WooCommerce, Storefront)..."
+wp language core install id_ID
+wp language plugin install woocommerce id_ID
+wp language theme install storefront id_ID || true
+wp site switch-language id_ID
+
+echo "Renaming the store pages to Indonesian titles (slugs stay)..."
+for pair in "shop:Toko" "cart:Keranjang" "checkout:Checkout" "myaccount:Akun saya"; do
+  page_id="$(wp eval "echo wc_get_page_id('${pair%%:*}');")"
+  [ "$page_id" -gt 0 ] && wp post update "$page_id" --post_title="${pair#*:}" >/dev/null
+done
+
+echo "Turning off WooCommerce coming-soon mode (new installs ship with it on)..."
+wp option update woocommerce_coming_soon no
+wp option update woocommerce_store_pages_only no
 
 echo "Setting the store currency to IDR..."
 wp option update woocommerce_currency IDR
@@ -70,33 +86,60 @@ wp term create product_cat "Sandal" --slug=sandal || true
 SNEAKERS_CAT="$(wp term list product_cat --slug=sneakers --field=term_id)"
 SANDAL_CAT="$(wp term list product_cat --slug=sandal --field=term_id)"
 
+SIZES="39,40,41,42,43,44"
+declare -A COLORS=(
+  [demo-runner-knit]="Putih Tulang,Biru Langit,Hijau Sage"
+  [demo-wool-comfort]="Abu Muda,Terakota,Biru Indigo"
+  [demo-everyday-canvas]="Putih,Kuning,Biru Denim"
+  [demo-recycled-slide]="Putih,Pasir,Zaitun"
+  [demo-eva-comfort]="Cokelat,Biru Baja,Zaitun"
+  [demo-strap-sandals]="Krem,Terakota,Biru Denim"
+)
+
 create_product() {
-  local name="$1" price="$2" sku="$3" stock="$4" cat="$5" desc="$6" featured="$7" image="$8"
+  local name="$1" price="$2" sku="$3" stock="$4" cat="$5" desc="$6" featured="$7" image="$8" sale_price="${9:-}"
   local id
   id="$(wp wc product create --user=admin --porcelain \
     --name="$name" --type=simple --regular_price="$price" --sku="$sku" \
     --manage_stock=true --stock_quantity="$stock" \
     --categories="[{\"id\":${cat}}]" --featured="$featured" \
     --short_description="$desc")"
+  if [ -n "$sale_price" ]; then
+    wp wc product update "$id" --user=admin --sale_price="$sale_price" >/dev/null
+  fi
   wp media import "/setup/product-images/${image}" --post_id="$id" --featured_image
+  local base="${image%.jpg}" gallery=""
+  for n in 2 3; do
+    local gid
+    gid="$(wp media import "/setup/product-images/${base}-${n}.jpg" --post_id="$id" --porcelain)"
+    gallery="${gallery:+$gallery,}$gid"
+  done
+  wp post meta update "$id" _product_image_gallery "$gallery" >/dev/null
+  local color_ids=""
+  for n in 1 2 3; do
+    local cid
+    cid="$(wp media import "/setup/product-images/${base}-color-${n}.jpg" --post_id="$id" --porcelain)"
+    color_ids="${color_ids:+$color_ids,}$cid"
+  done
+  wp eval-file /setup/make-variable.php "$id" "${COLORS[$sku]}" "$SIZES" "$color_ids" >/dev/null
   echo "  -> ${name} (#${id})"
 }
 
 echo "Creating sneakers..."
 create_product "Runner Knit Sneakers" 450000 demo-runner-knit 40 "$SNEAKERS_CAT" \
-  "Rajutan breathable dari serat daur ulang, ringan dipakai sepanjang hari." true runner-knit-sneakers.svg
+  "Rajutan breathable dari serat daur ulang, ringan dipakai sepanjang hari." true runner-knit-sneakers.jpg 360000
 create_product "Wool Comfort Sneakers" 520000 demo-wool-comfort 35 "$SNEAKERS_CAT" \
-  "Lapisan wol alami, hangat tanpa bikin gerah." true wool-comfort-sneakers.svg
+  "Lapisan wol alami, hangat tanpa bikin gerah." true wool-comfort-sneakers.jpg
 create_product "Everyday Canvas Sneakers" 380000 demo-everyday-canvas 55 "$SNEAKERS_CAT" \
-  "Kanvas tebal, cocok dipakai santai setiap hari." false everyday-canvas-sneakers.svg
+  "Kanvas tebal, cocok dipakai santai setiap hari." false everyday-canvas-sneakers.jpg
 
 echo "Creating sandals..."
 create_product "Recycled Slide Sandals" 220000 demo-recycled-slide 50 "$SANDAL_CAT" \
-  "Sol empuk dari karet daur ulang, anti licin." true recycled-slide-sandals.svg
+  "Sol empuk dari karet daur ulang, anti licin." true recycled-slide-sandals.jpg 180000
 create_product "EVA Comfort Sandals" 195000 demo-eva-comfort 60 "$SANDAL_CAT" \
-  "Ringan seharian, busa EVA yang balik ke bentuk semula." false eva-comfort-sandals.svg
+  "Ringan seharian, busa EVA yang balik ke bentuk semula." false eva-comfort-sandals.jpg
 create_product "Strap Sandals" 250000 demo-strap-sandals 45 "$SANDAL_CAT" \
-  "Tali adjustable, pas di segala bentuk kaki." true strap-sandals.svg
+  "Tali adjustable, pas di segala bentuk kaki." true strap-sandals.jpg
 
 echo "Setting up a curated primary menu (Semua Produk / Sneakers / Sandal only, not WordPress's default page list)..."
 existing_menus="$(wp menu list --format=ids)"
