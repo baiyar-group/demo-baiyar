@@ -20,7 +20,7 @@ get_header(); ?>
   <section class="baiyar-hero-photo relative flex min-h-[100svh] items-end overflow-hidden">
     <img
       src="<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/hero-photo.jpg"
-      alt="<?php esc_attr_e('Seseorang berjalan santai memakai sneakers Lapik di jalan setapak.', 'baiyar-storefront'); ?>"
+      alt="<?php esc_attr_e('Sekelompok teman duduk santai bersama di rumah, suasana hangat sepanjang hari.', 'baiyar-storefront'); ?>"
       class="absolute inset-0 h-full w-full object-cover"
       fetchpriority="high"
     />
