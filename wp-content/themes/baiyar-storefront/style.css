@@ -131,10 +131,13 @@ html {
   top: 16px;
 }
 
-/* The hero banner (see front-page.php) gets the same 16px gap on top as the left/right/bottom sides
-   below give it, so it reads as one evenly-inset rounded card rather than bleeding up behind the
-   header on just one edge - a deliberate change from the photo-behind-the-header look this used to
-   have (negative margin-top), which doesn't fit a card with visible spacing on every other side.
+/* The hero banner (see front-page.php) starts at the *same* 16px inset from the top as the header
+   itself, not 16px below where the header's box ends - the header (sticky, higher z-index) then
+   visibly floats on top of the hero card, the way Allbirds' bar floats on top of its hero image,
+   while the hero still keeps its own 16px/24px-radius inset on every side like a real card underneath
+   it, rather than bleeding flush into the header's own space on just the top edge. The header's
+   resting outer height is margin-top(16) + height(52) = 68px; pulling the hero up by (68 - 16) = 52px
+   cancels exactly that much of the normal top-to-bottom flow, landing the hero's top back at 16px too.
 
    It also has to break out of Storefront's own content width: the "storefront-align-wide" body class
    centers #main/.content-area inside a constrained max-width (not the full viewport), same as every
@@ -145,7 +148,7 @@ html {
    deliberate 16px gutter back out of that full width on each side, for the rounded-card look (as
    opposed to true edge-to-edge) rather than reinstating the old centered-column inset. */
 .baiyar-hero-photo {
-  margin-top: 16px;
+  margin-top: -52px;
   width: calc(100vw - 32px);
   margin-left: calc(50% - 50vw + 16px);
   margin-right: calc(50% - 50vw + 16px);
