@@ -134,9 +134,19 @@ html {
 /* The hero banner (full-bleed photo, see front-page.php) is pulled up by the header's own resting
    outer height (16px margin-top + 52px min-height) so it starts right where the header's box starts,
    instead of leaving a gap below it - the pill then visibly floats on top of the photo, the way
-   Allbirds' bar sits on top of its hero image, rather than the photo starting underneath it. */
+   Allbirds' bar sits on top of its hero image, rather than the photo starting underneath it.
+
+   It also has to break out of Storefront's own content width: the "storefront-align-wide" body class
+   centers #main/.content-area inside a constrained max-width (not the full viewport), same as every
+   other section on the page - which is correct for text sections, but left the "full-bleed" hero
+   actually sitting in a ~1060px-wide inset column with page background showing on both sides. The
+   width:100vw + negative-margin pair is the standard break-out-of-a-centered-container trick: it sizes
+   the section to the viewport itself regardless of what its ancestors constrain it to. */
 .baiyar-hero-photo {
   margin-top: -68px;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 /* Storefront's own nav/cart-link padding (1.618em, its golden-ratio vertical rhythm) was built for a
