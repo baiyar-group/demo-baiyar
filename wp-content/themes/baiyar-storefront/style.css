@@ -89,14 +89,25 @@ body {
   border-bottom: 1px solid var(--baiyar-neutral-200);
 }
 
-.site-branding img.custom-logo {
-  height: 28px;
-  width: auto;
+/* The store's own brand mark: a styled text wordmark (no logo image - see functions.php). */
+.site-branding .site-title,
+.site-branding .site-title a {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--baiyar-ink) !important;
+  text-decoration: none;
   transition: transform 200ms var(--baiyar-ease);
+  display: inline-block;
 }
 
-.site-branding a:hover img.custom-logo {
+.site-branding .site-title a:hover {
   transform: translateY(-1px);
+  color: var(--baiyar-ink) !important;
+}
+
+.site-branding .site-description {
+  display: none;
 }
 
 /* ---------- Typography ---------- */
@@ -197,6 +208,7 @@ button.wc-block-components-button:hover,
 /* ---------- Product cards ---------- */
 
 ul.products li.product,
+.baiyar-bestseller-grid li.product,
 .wc-block-grid__product {
   background: #ffffff;
   border: 1px solid var(--baiyar-neutral-200);
@@ -210,6 +222,7 @@ ul.products li.product,
 }
 
 ul.products li.product:hover,
+.baiyar-bestseller-grid li.product:hover,
 .wc-block-grid__product:hover {
   transform: translateY(-4px);
   box-shadow: var(--baiyar-shadow-lg);
@@ -217,11 +230,21 @@ ul.products li.product:hover,
 }
 
 ul.products li.product img,
+.baiyar-bestseller-grid li.product img,
 .wc-block-grid__product img {
   border-radius: var(--baiyar-radius-lg);
+  /* WordPress can't read an SVG's intrinsic size (no GD/Imagick support for it), so the placeholder
+     product photos sometimes get a bogus 1x1 "natural size" baked into their width/height attributes.
+     Force the real display size instead of trusting those attributes. */
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  display: block;
 }
 
-ul.products li.product .price {
+ul.products li.product .price,
+.baiyar-bestseller-grid li.product .price {
   color: var(--baiyar-brand-700) !important;
 }
 
@@ -291,6 +314,489 @@ ul.wc_payment_methods li {
   box-shadow: 0 0 0 1px var(--baiyar-brand-600);
 }
 
+/* ---------- Full-width layout (sidebar removed in functions.php) ---------- */
+
+.content-area {
+  width: 100% !important;
+  float: none !important;
+}
+
+/* ---------- Announcement bar ---------- */
+
+.baiyar-announce {
+  background: var(--baiyar-ink);
+  color: #ffffff;
+  text-align: center;
+  padding: 10px 16px;
+}
+
+.baiyar-announce p {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Homepage: hero ---------- */
+
+.baiyar-home {
+  max-width: none;
+  width: 100%;
+}
+
+.baiyar-hero {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  background: linear-gradient(180deg, var(--baiyar-neutral-50) 0%, #ffffff 100%);
+  padding: 72px max(5vw, 24px);
+  flex-wrap: wrap;
+}
+
+.baiyar-hero__text {
+  flex: 1 1 420px;
+  max-width: 560px;
+}
+
+.baiyar-hero__eyebrow {
+  color: var(--baiyar-brand-600);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  margin: 0 0 12px;
+}
+
+.baiyar-hero h1 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+.baiyar-hero__lede {
+  color: var(--baiyar-neutral-600);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.baiyar-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.baiyar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 24px;
+  border-radius: var(--baiyar-radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 180ms var(--baiyar-ease),
+    box-shadow 180ms var(--baiyar-ease),
+    filter 180ms var(--baiyar-ease);
+}
+
+.baiyar-btn--primary {
+  background: var(--baiyar-brand-gradient);
+  color: #ffffff !important;
+  box-shadow: var(--baiyar-shadow-md);
+}
+
+.baiyar-btn--secondary {
+  background: #ffffff;
+  color: var(--baiyar-ink) !important;
+  border: 1px solid var(--baiyar-neutral-300);
+}
+
+.baiyar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--baiyar-shadow-lg);
+  filter: brightness(1.03);
+}
+
+.baiyar-hero__art {
+  flex: 1 1 360px;
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.baiyar-hero__blob {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 420px;
+  height: 420px;
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--baiyar-brand-100), var(--baiyar-brand-50) 60%, transparent 72%);
+}
+
+.baiyar-hero__shoe {
+  position: relative;
+  width: min(420px, 85%);
+  height: auto;
+  border-radius: var(--baiyar-radius-xl);
+  box-shadow: var(--baiyar-shadow-lg);
+  animation: baiyar-float 5s ease-in-out infinite;
+}
+
+@keyframes baiyar-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ---------- Homepage: trust bar ---------- */
+
+.baiyar-trust {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 40px max(5vw, 24px);
+  border-bottom: 1px solid var(--baiyar-neutral-200);
+}
+
+.baiyar-trust__item {
+  text-align: center;
+}
+
+.baiyar-trust__icon {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--baiyar-brand-50);
+  font-size: 1.125rem;
+  margin-bottom: 10px;
+}
+
+.baiyar-trust__item p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--baiyar-neutral-700);
+  font-weight: 500;
+}
+
+/* ---------- Homepage: category tiles ---------- */
+
+.baiyar-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px max(5vw, 24px);
+}
+
+.baiyar-category-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 320px;
+  border-radius: var(--baiyar-radius-xl);
+  padding: 28px;
+  text-decoration: none;
+  background-size: cover;
+  background-position: center;
+  box-shadow: var(--baiyar-shadow-md);
+  overflow: hidden;
+  transition:
+    transform 220ms var(--baiyar-ease),
+    box-shadow 220ms var(--baiyar-ease);
+}
+
+.baiyar-category-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 15, 25, 0) 40%, rgba(11, 15, 25, 0.68) 100%);
+}
+
+.baiyar-category-tile--sneakers {
+  background-image: url("assets/img/tile-sneakers.svg");
+}
+
+.baiyar-category-tile--sandal {
+  background-image: url("assets/img/tile-sandal.svg");
+}
+
+.baiyar-category-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--baiyar-shadow-xl);
+}
+
+.baiyar-category-tile__label,
+.baiyar-category-tile__cta {
+  position: relative;
+  color: #ffffff !important;
+}
+
+.baiyar-category-tile__label {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.baiyar-category-tile__cta {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+/* ---------- Homepage: best sellers + section heading ---------- */
+
+.baiyar-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 max(5vw, 24px);
+}
+
+.baiyar-section-heading h2 {
+  font-size: 1.5rem;
+}
+
+.baiyar-section-heading a {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.baiyar-bestsellers {
+  padding: 24px 0 56px;
+}
+
+.baiyar-bestseller-grid {
+  max-width: 1120px;
+  margin: 16px auto 0;
+  padding: 0 max(5vw, 24px);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .baiyar-bestseller-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .baiyar-bestseller-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.baiyar-bestseller-grid li.product {
+  margin: 0;
+  width: auto;
+  position: relative;
+  /* An orphaned <li> (no <ul> ancestor resetting list-style, since this wrapper is a plain <div>) shows
+     a default bullet otherwise. */
+  list-style: none;
+}
+
+.baiyar-bestseller-grid .onsale,
+.baiyar-bestseller-grid li.product::after {
+  display: none;
+}
+
+.baiyar-bestseller-grid li.product::before {
+  content: "Best seller";
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  background: var(--baiyar-ink);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: var(--baiyar-radius-sm);
+  z-index: 1;
+}
+
+/* ---------- Homepage: brand story ---------- */
+
+.baiyar-story {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px max(5vw, 24px) 80px;
+  text-align: center;
+}
+
+.baiyar-story h2 {
+  font-size: 1.75rem;
+  margin-bottom: 16px;
+}
+
+.baiyar-story p {
+  color: var(--baiyar-neutral-600);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+/* ---------- Footer ---------- */
+
+.baiyar-footer {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 56px max(5vw, 24px) 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  justify-content: space-between;
+}
+
+.baiyar-footer__newsletter {
+  flex: 1 1 320px;
+  max-width: 380px;
+}
+
+.baiyar-footer__newsletter h2 {
+  font-size: 1.25rem;
+  margin: 0 0 8px;
+}
+
+.baiyar-footer__newsletter p {
+  color: var(--baiyar-neutral-600);
+  font-size: 0.875rem;
+  margin: 0 0 16px;
+}
+
+.baiyar-footer__form {
+  display: flex;
+  gap: 8px;
+}
+
+.baiyar-footer__form input[type="email"] {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1px solid var(--baiyar-neutral-300);
+  border-radius: var(--baiyar-radius-md);
+  font-size: 0.875rem;
+}
+
+.baiyar-footer__form button {
+  padding: 11px 20px;
+  border: none;
+  border-radius: var(--baiyar-radius-md);
+  background: var(--baiyar-brand-gradient);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 180ms var(--baiyar-ease);
+}
+
+.baiyar-footer__form button:hover {
+  transform: translateY(-2px);
+}
+
+.baiyar-footer__columns {
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+  flex: 2 1 420px;
+  justify-content: flex-end;
+}
+
+.baiyar-footer__column h3 {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--baiyar-neutral-500);
+  margin: 0 0 14px;
+}
+
+.baiyar-footer__column ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.baiyar-footer__column li {
+  margin-bottom: 10px;
+}
+
+.baiyar-footer__column a {
+  color: var(--baiyar-ink);
+  text-decoration: none;
+  font-size: 0.9375rem;
+}
+
+.baiyar-footer__column a:hover {
+  color: var(--baiyar-brand-600);
+}
+
+.baiyar-footer__payment {
+  margin: 0 0 6px;
+}
+
+.baiyar-footer__methods {
+  color: var(--baiyar-neutral-500);
+  font-size: 0.8125rem;
+  margin: 0;
+}
+
+.baiyar-footer__social {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--baiyar-neutral-200);
+}
+
+.baiyar-footer__social span {
+  font-size: 0.8125rem;
+  color: var(--baiyar-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.baiyar-footer__social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--baiyar-neutral-100);
+  color: var(--baiyar-ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 180ms var(--baiyar-ease),
+    transform 180ms var(--baiyar-ease);
+}
+
+.baiyar-footer__social a:hover {
+  background: var(--baiyar-brand-100);
+  transform: translateY(-2px);
+}
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -306,5 +812,26 @@ ul.wc_payment_methods li {
   .baiyar-reveal {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .baiyar-hero__shoe {
+    animation: none !important;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .baiyar-hero {
+    padding: 48px 20px;
+  }
+
+  .baiyar-footer {
+    flex-direction: column;
+  }
+
+  .baiyar-footer__columns {
+    justify-content: flex-start;
+    gap: 32px;
   }
 }

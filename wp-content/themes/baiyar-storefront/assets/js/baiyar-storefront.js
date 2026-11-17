@@ -9,7 +9,9 @@
   // skipped entirely for prefers-reduced-motion rather than just shortened.
   function markRevealTargets() {
     var targets = document.querySelectorAll(
-      "ul.products li.product, .wc-block-grid__product, .woocommerce-Tabs-panel, .cart_item, .wc-block-cart-item",
+      "ul.products li.product, .baiyar-bestseller-grid li.product, .wc-block-grid__product, " +
+        ".woocommerce-Tabs-panel, .cart_item, .wc-block-cart-item, " +
+        ".baiyar-trust__item, .baiyar-category-tile, .baiyar-story",
     );
     targets.forEach(function (el, index) {
       if (prefersReducedMotion) {

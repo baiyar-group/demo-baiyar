@@ -37,47 +37,59 @@ add_action('wp_head', function () {
     echo "<script>document.documentElement.classList.add('no-js');</script>\n";
 }, 0);
 
-// Real Baiyar wordmark in the header instead of Storefront's default site-title text.
-add_action('after_setup_theme', function () {
-    add_theme_support('custom-logo', [
-        'height' => 40,
-        'width' => 140,
-        'flex-height' => true,
-        'flex-width' => true,
-    ]);
+// The store has its own brand (set to "Lapik" by setup.sh via `wp option update blogname`) - Baiyar is
+// the payment processor behind it, not the retailer, so its mark belongs at checkout and in the
+// footer's "Pembayaran oleh" line (baiyar_inline_logo() below), never as the site's own header logo.
+// The header therefore just shows the site title as a styled text wordmark (see .site-branding in
+// style.css) - no custom_logo is set.
+
+// This demo's product photos are SVG illustrations (bin/product-images, generated to match Baiyar's
+// tokens) sideloaded by setup.sh via `wp media import --featured_image`; WP blocks SVG uploads by
+// default, so both layers of its filetype check need to allow it.
+add_filter('upload_mimes', function ($mimes) {
+    $mimes['svg'] = 'image/svg+xml';
+    return $mimes;
 });
-
-add_action('after_switch_theme', function () {
-    $logo_path = get_stylesheet_directory() . '/assets/img/baiyar-logo.svg';
-    $existing = get_theme_mod('custom_logo');
-    if ($existing || !file_exists($logo_path)) {
-        return;
+add_filter('wp_check_filetype_and_ext', function ($data, $file, $filename) {
+    if (str_ends_with(strtolower((string) $filename), '.svg')) {
+        $data['ext'] = 'svg';
+        $data['type'] = 'image/svg+xml';
     }
-
-    $upload_dir = wp_upload_dir();
-    $destination = trailingslashit($upload_dir['path']) . 'baiyar-logo.svg';
-    if (!file_exists($destination)) {
-        copy($logo_path, $destination);
-    }
-
-    $filetype = wp_check_filetype($destination, null);
-    $attachment_id = wp_insert_attachment([
-        'post_mime_type' => $filetype['type'] ?: 'image/svg+xml',
-        'post_title' => 'Baiyar logo',
-        'post_status' => 'inherit',
-    ], $destination);
-
-    if (!is_wp_error($attachment_id) && $attachment_id) {
-        set_theme_mod('custom_logo', $attachment_id);
-    }
-});
-
-// WordPress core doesn't generate attachment metadata for SVGs; without this the logo renders at the
-// SVG's native 380x116 instead of the constrained size requested above.
-add_filter('wp_get_attachment_image_src', function ($image, $attachment_id, $size) {
-    if ($image && str_ends_with((string) $image[0], '.svg')) {
-        $image[1] = 140;
-        $image[2] = 40;
-    }
-    return $image;
+    return $data;
 }, 10, 3);
+
+// A single-purpose store demo has no use for Storefront's blog sidebar (Recent Posts/Comments/
+// Archives) next to the shop and product pages - drop it everywhere for a full-width, uncluttered
+// layout closer to a real storefront than a blog with a shop bolted on.
+add_action('init', function () {
+    remove_action('storefront_sidebar', 'storefront_get_sidebar');
+});
+
+/** The real Baiyar wordmark, inline (so `currentColor`/height can be set from CSS), for spots other
+ * than the header logo (e.g. the footer payment line) that custom-logo can't reach. */
+function baiyar_inline_logo($height = 20)
+{
+    static $markup = null;
+    if ($markup === null) {
+        $path = get_stylesheet_directory() . '/assets/img/baiyar-logo.svg';
+        $markup = file_exists($path) ? file_get_contents($path) : '';
+    }
+    return $markup ? preg_replace('/<svg /', '<svg style="height:' . (int) $height . 'px;width:auto" ', $markup, 1) : '';
+}
+
+// Announcement bar: wp_body_open fires right after <body>, before any theme markup, so this always
+// lands above the header regardless of Storefront's own hook names.
+add_action('wp_body_open', function () {
+    echo '<div class="baiyar-announce"><p>'
+        . esc_html__('Checkout ini pakai Baiyar sungguhan - coba bayar dengan QRIS, VA atau e-wallet.', 'baiyar-storefront')
+        . '</p></div>';
+});
+
+// Replace Storefront's (empty, unconfigured) footer widget row with a newsletter + link-column block,
+// kept ahead of storefront_credit so "(c) ... Built with WooCommerce" still closes the page.
+add_action('init', function () {
+    remove_action('storefront_footer', 'storefront_footer_widgets', 10);
+});
+add_action('storefront_footer', function () {
+    get_template_part('template-parts/footer', 'content');
+}, 5);

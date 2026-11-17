@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <rect width="800" height="800" fill="#F3F4F6"/>
+  
+<g transform="translate(90,260)">
+  <!-- sole -->
+  <path d="M10 260 C 10 290 40 305 85 305 L 540 305 C 600 305 620 275 615 245
+           L 600 255 C 580 275 550 282 510 282 L 70 282 C 35 282 15 270 10 255 Z"
+        fill="#1D4ED8" stroke="#0F172C" stroke-width="6" stroke-linejoin="round"/>
+  <!-- upper body: toe -> vamp -> heel counter, rising at the back -->
+  <path d="M15 255
+           C 10 190 55 150 130 135
+           L 400 110
+           C 455 104 480 70 470 20
+           C 510 25 545 55 560 100
+           C 575 148 572 200 540 245
+           L 85 282 C 40 282 15 272 15 255 Z"
+        fill="#F9FAFB" stroke="#0F172C" stroke-width="6" stroke-linejoin="round"/>
+  <!-- heel collar notch -->
+  <path d="M470 20 C 500 8 520 2 535 4 C 520 20 505 45 500 72"
+        fill="#F9FAFB" stroke="#0F172C" stroke-width="6" stroke-linejoin="round"/>
+  <!-- tongue -->
+  <path d="M250 118 C 245 95 255 78 275 70 C 290 90 292 110 285 128 Z"
+        fill="#F9FAFB" stroke="#0F172C" stroke-width="4" stroke-linejoin="round"/>
+  <!-- laces -->
+  <path d="M190 118 L 230 150 M 235 108 L 272 142 M 280 100 L 315 136 M 325 94 L 358 128"
+        stroke="#9CA3AF" stroke-width="9" stroke-linecap="round"/>
+</g>
+</svg>
