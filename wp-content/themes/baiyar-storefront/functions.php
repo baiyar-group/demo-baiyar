@@ -12,11 +12,14 @@ add_action('wp_enqueue_scripts', function () {
     $theme = wp_get_theme();
 
     wp_enqueue_style('storefront-style', get_template_directory_uri() . '/style.css', [], $theme->parent() ? $theme->parent()->get('Version') : null);
+    // filemtime(), not the theme's static "Version:" header - that number only changes when someone
+    // remembers to bump it, so every style.css edit was silently cached under the old ?ver= forever
+    // (this is why fixes kept "not showing up" in the browser despite being correct on disk).
     wp_enqueue_style(
         'baiyar-storefront-style',
         get_stylesheet_uri(),
         ['storefront-style'],
-        $theme->get('Version'),
+        filemtime(get_stylesheet_directory() . '/style.css'),
     );
 
     // Tailwind's Play CDN: this theme has no Node/build step (docker compose + wp-cli only), so this is
@@ -64,7 +67,7 @@ add_action('wp_enqueue_scripts', function () {
         'baiyar-storefront-script',
         get_stylesheet_directory_uri() . '/assets/js/baiyar-storefront.js',
         ['jquery'],
-        $theme->get('Version'),
+        filemtime(get_stylesheet_directory() . '/assets/js/baiyar-storefront.js'),
         true,
     );
 }, 20);
