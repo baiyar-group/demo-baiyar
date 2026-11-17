@@ -96,17 +96,19 @@ body {
   gap: 20px;
   max-width: 1200px;
   margin: 16px auto 0;
-  padding: 4px 8px 4px 24px;
+  padding: 0 8px 0 24px;
   background: #ffffff;
   border: none;
   border-radius: 9999px;
   box-shadow: var(--baiyar-shadow-md);
+  min-height: 52px;
 }
 
 /* Storefront's own nav/cart-link padding (1.618em, its golden-ratio vertical rhythm) was built for a
    plain full-width bar, not a compact pill - it alone made the pill much taller than intended. */
 .main-navigation ul.menu > li > a {
-  padding: 0.75em 0.875em;
+  padding: 0.4em 0.875em;
+  line-height: 1.4;
 }
 
 .site-header-cart .cart-contents {
