@@ -116,12 +116,15 @@ html {
   gap: 20px;
   max-width: 1200px;
   margin: 16px auto 0;
-  padding: 0 8px 0 24px;
+  /* Equal left/right padding (was 24px/8px, left-heavy for the old wider logo lockup) - height is
+     fixed, not min-height, so the pill's own vertical whitespace comes purely from flex centering
+     (align-items:center above), which keeps it visually even top-to-bottom at any content size. */
+  padding: 0 24px;
   background: #ffffff;
   border: none;
   border-radius: 9999px;
   box-shadow: var(--baiyar-shadow-md);
-  min-height: 52px;
+  height: 48px;
   /* Sticky, not static: stays in view while scrolling (like Allbirds' bar) instead of scrolling away
      with the page. `top` matches the pill's own resting offset from the viewport edge so it doesn't
      visibly jump the moment it starts sticking. Storefront's own .site-header already carries
@@ -136,7 +139,7 @@ html {
    visibly floats on top of the hero card, the way Allbirds' bar floats on top of its hero image,
    while the hero still keeps its own 16px/24px-radius inset on every side like a real card underneath
    it, rather than bleeding flush into the header's own space on just the top edge. The header's
-   resting outer height is margin-top(16) + height(52) = 68px; pulling the hero up by (68 - 16) = 52px
+   resting outer height is margin-top(16) + height(48) = 64px; pulling the hero up by (64 - 16) = 48px
    cancels exactly that much of the normal top-to-bottom flow, landing the hero's top back at 16px too.
 
    It also has to break out of Storefront's own content width: the "storefront-align-wide" body class
@@ -148,7 +151,7 @@ html {
    deliberate 16px gutter back out of that full width on each side, for the rounded-card look (as
    opposed to true edge-to-edge) rather than reinstating the old centered-column inset. */
 .baiyar-hero-photo {
-  margin-top: -52px;
+  margin-top: -48px;
   width: calc(100vw - 32px);
   margin-left: calc(50% - 50vw + 16px);
   margin-right: calc(50% - 50vw + 16px);
@@ -191,10 +194,44 @@ html {
   max-width: none;
   margin: 0;
   padding: 0;
+  gap: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+}
+
+/* Centering the nav turned out to be a real fight - everything tried hit a shrink-to-fit sizing bug
+   where the nav's box wouldn't settle to its visible content's actual width (needed !important to
+   finally force it - something keeps re-asserting a wider auto width otherwise, never tracked down to
+   one specific rule). Absolutely positioning the *cart* instead of the nav was tried first and broke
+   the cart drawer outright: the drawer itself is `position:fixed !important` (see further down), and
+   `transform` on ANY ancestor - even one that isn't the drawer's direct parent - becomes the
+   containing block for that fixed descendant instead of the viewport, so the drawer rendered as a
+   small inline box next to the cart icon instead of sliding in from off-screen. The cart has no such
+   descendant, so centering *it* (via position:absolute + transform) is what's safe here - the nav
+   stays in normal flow, cart gets pulled out and pinned, cart's own vertical centering was already
+   working fine from flex align-items:center with no transform needed. It centers within the slice to
+   the right of the logo, not literally the whole header, which is close enough that the logo's own
+   width isn't worth compensating for. Desktop only (Storefront's own mobile-nav breakpoint) - mobile
+   keeps nav/cart in their normal hamburger-adjacent flow. */
+@media (min-width: 768px) {
+  #masthead > .storefront-primary-navigation > .col-full {
+    justify-content: flex-end;
+  }
+
+  /* Without this, .primary-navigation (a plain display:block div) fills all the available flex space
+     rather than shrinking to the menu's real width. */
+  .main-navigation .primary-navigation {
+    display: inline-block;
+  }
+
+  .main-navigation {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content !important;
+    flex: none !important;
+  }
 }
 
 /* The inline search box doesn't fit a single-row pill the way Allbirds' icon-only search does - hidden
@@ -203,16 +240,30 @@ html {
   display: none !important;
 }
 
-/* The store's own brand mark: a styled text wordmark (no logo image - see functions.php). */
+/* The store's own brand mark: a styled text wordmark (no logo image - see functions.php). Weight 800 +
+   tight tracking + a small brand-colored dot reads more like a considered wordmark than a plain bold
+   page heading, without needing an actual logo asset. */
 .site-branding .site-title,
 .site-branding .site-title a {
-  font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--baiyar-ink) !important;
   text-decoration: none;
   transition: transform 200ms var(--baiyar-ease);
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-branding .site-title a::after {
+  content: "";
   display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--baiyar-brand-500);
 }
 
 .site-branding .site-title a:hover {

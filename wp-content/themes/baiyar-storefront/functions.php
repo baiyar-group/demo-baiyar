@@ -72,6 +72,19 @@ add_action('wp_enqueue_scripts', function () {
     );
 }, 20);
 
+// Storefront's own class-storefront.php independently re-enqueues this exact same stylesheet a second
+// time, under its own handle ('storefront-child-style'), at priority 30 - after ours above, and still
+// versioned by the theme header's static "Version:" string, not filemtime(). Two <link> tags for the
+// same file, one correctly cache-busted and one that never changes, loading in that order, means the
+// *stale* one wins the cascade for any rule the browser had already cached from an earlier version of
+// this file - which is almost certainly why style.css edits kept not showing up all the way back to
+// the very first ones in this session, not just the single enqueue this theme makes itself. Dequeuing
+// Storefront's copy outright, since ours already depends on 'storefront-style' and loads after it too.
+add_action('wp_enqueue_scripts', function () {
+    wp_dequeue_style('storefront-child-style');
+    wp_deregister_style('storefront-child-style');
+}, 31);
+
 // `no-js` is removed by the script itself on load; CSS treats unremoved `no-js` as "skip animation",
 // so a visitor without JS always sees the final, visible state instead of a permanently-hidden one.
 add_filter('language_attributes', function ($output) {
@@ -138,7 +151,7 @@ function baiyar_inline_logo($height = 20)
 // Announcement bar: wp_body_open fires right after <body>, before any theme markup, so this always
 // lands above the header regardless of Storefront's own hook names.
 add_action('wp_body_open', function () {
-    echo '<div class="bg-ink px-4 py-2.5 text-center"><p class="m-0 text-[0.8125rem] font-medium tracking-wide text-white">'
+    echo '<div class="flex h-8 items-center justify-center bg-ink px-4"><p class="m-0 text-[0.8125rem] font-medium leading-none tracking-wide text-white">'
         . esc_html__('Checkout ini pakai Baiyar sungguhan - coba bayar dengan QRIS, VA atau e-wallet.', 'baiyar-storefront')
         . '</p></div>';
 });

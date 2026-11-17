@@ -50,19 +50,27 @@ get_header(); ?>
 
   <section class="mx-auto grid max-w-5xl grid-cols-2 gap-6 border-y border-neutral-200 px-6 py-10 md:grid-cols-4">
     <div class="baiyar-trust__item text-center">
-      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg">&#9989;</span>
+      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+      </span>
       <p class="text-sm font-medium text-neutral-700"><?php esc_html_e('Checkout asli Baiyar, bukan tempelan', 'baiyar-storefront'); ?></p>
     </div>
     <div class="baiyar-trust__item text-center">
-      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg">&#9850;</span>
+      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M7 15h3"/></svg>
+      </span>
       <p class="text-sm font-medium text-neutral-700"><?php esc_html_e('QRIS, VA, e-wallet dan retail dalam satu checkout', 'baiyar-storefront'); ?></p>
     </div>
     <div class="baiyar-trust__item text-center">
-      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg">&#9851;</span>
+      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M4 20c0-9 5-15 16-16-1 11-7 16-16 16z"/><path d="M4.5 19.5c3-4 7-7.5 11-10.5"/></svg>
+      </span>
       <p class="text-sm font-medium text-neutral-700"><?php esc_html_e('Material daur ulang di setiap pasang', 'baiyar-storefront'); ?></p>
     </div>
     <div class="baiyar-trust__item text-center">
-      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-lg">&#8635;</span>
+      <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0 1 19 8.5"/><path d="M18.5 15A7 7 0 0 1 5 15.5"/></svg>
+      </span>
       <p class="text-sm font-medium text-neutral-700"><?php esc_html_e('Tukar ukuran gampang, 30 hari', 'baiyar-storefront'); ?></p>
     </div>
   </section>

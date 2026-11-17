@@ -134,6 +134,29 @@ method itself. Keep this split if either brand's content changes.
   that alone broke our sticky header. Fixed by resetting `body`/`#page` back to `overflow-x: visible` and
   doing the actual horizontal clip on `<html>` instead, which doesn't create the same mismatch. Worth
   checking for on any "sticky isn't sticking" bug before suspecting z-index or specificity.
+- The `filemtime()` cache-busting fix above only fixed *our own* enqueue call. Storefront's parent theme
+  (`class-storefront.php`) independently re-enqueues this exact same `style.css` a second time, under its
+  own handle (`storefront-child-style`), specifically so it loads *after* ours - and still versions it by
+  the static `Version:` header, never filemtime. Two `<link>` tags for one file, one correctly cache-busted
+  and one that never changes, loading in that order: the stale one wins the cascade for any rule a browser
+  had already cached from an earlier version of the file. This is almost certainly the real explanation for
+  nearly every "I fixed this already, why isn't it showing up" moment across this whole project, not just
+  the single enqueue the filemtime fix addressed on its own. Dequeued Storefront's copy outright
+  (`wp_dequeue_style('storefront-child-style')` at a later priority) since ours already depends on
+  `storefront-style` and loads after it too.
+- Centering the nav menu in the header pill (logo left, nav center, cart right) fought a real shrink-to-fit
+  sizing bug: the nav's own box kept resolving to a much wider width than its visible text, no matter what
+  `display`/`width` was set on it or its children - `.primary-navigation` (a plain `display:block` div
+  Storefront wraps the menu in) needed `display: inline-block` to stop it filling available space, and even
+  then the outer `<nav>` itself needed `width: fit-content !important; flex: none !important` to actually
+  match. Never fully traced to one specific rule fighting it. Separately: absolutely positioning the *cart*
+  icon (rather than the nav) to achieve the 3-part layout broke the cart drawer outright - the drawer is
+  `position: fixed !important`, and a `transform` on any ancestor (even one that isn't the drawer's direct
+  parent) becomes the containing block for that fixed descendant instead of the viewport, so it rendered as
+  a small inline box next to the cart icon instead of sliding in from off-screen. Centering the nav instead
+  (which has no `position: fixed` descendants) avoided that trap entirely - when something that's
+  `position: fixed` stops behaving like it, check every ancestor for a new `transform`, not just the
+  stacking-context/z-index angle documented above.
 
 ## Status
 
