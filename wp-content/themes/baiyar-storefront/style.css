@@ -81,6 +81,26 @@ button {
 
 body {
   background: var(--baiyar-neutral-100);
+  /* Storefront's base style.css sets `overflow-x: hidden` directly on <body> to stop horizontal
+     scroll. That alone makes <body> a scroll container (overflow-y resolves to 'auto' as a side
+     effect, per spec, even though nothing there overflows) - but actual page scrolling still happens
+     on <html>/the viewport, not on <body> itself. That mismatch is a well-known Chromium bug: any
+     position:sticky descendant of <body> stops sticking. Move the clip to <html> (see below) instead
+     and reset this back to visible, which doesn't create the same mismatch.  */
+  overflow-x: visible;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+/* Storefront's `.site { overflow-x: hidden }` (on #page, the div wrapping the whole site) is the same
+   problem one level down - any such ancestor between the sticky header and <html> makes it a "scroll
+   container" the header sticks relative to instead of the real viewport, and #page never actually
+   scrolls itself (its height just grows with the page), so the header never appears to stick at all.
+   #page's higher-specificity ID beats the class rule here. */
+#page {
+  overflow-x: visible;
 }
 
 /* The header is a single rounded pill (logo, nav, cart icon in one row), floating over the page
@@ -102,6 +122,21 @@ body {
   border-radius: 9999px;
   box-shadow: var(--baiyar-shadow-md);
   min-height: 52px;
+  /* Sticky, not static: stays in view while scrolling (like Allbirds' bar) instead of scrolling away
+     with the page. `top` matches the pill's own resting offset from the viewport edge so it doesn't
+     visibly jump the moment it starts sticking. Storefront's own .site-header already carries
+     position:relative + z-index:999 (see the cart-drawer note further down) - sticky overrides the
+     position, the z-index stays and is what keeps this above the hero photo below. */
+  position: sticky;
+  top: 16px;
+}
+
+/* The hero banner (full-bleed photo, see front-page.php) is pulled up by the header's own resting
+   outer height (16px margin-top + 52px min-height) so it starts right where the header's box starts,
+   instead of leaving a gap below it - the pill then visibly floats on top of the photo, the way
+   Allbirds' bar sits on top of its hero image, rather than the photo starting underneath it. */
+.baiyar-hero-photo {
+  margin-top: -68px;
 }
 
 /* Storefront's own nav/cart-link padding (1.618em, its golden-ratio vertical rhythm) was built for a
@@ -612,23 +647,6 @@ ul.wc_payment_methods li {
   float: none !important;
 }
 
-/* ---------- Homepage: hero shoe float (hero itself is Tailwind utilities in front-page.php; this
-   keyframe is kept here since it's not worth a Tailwind config detour for one animation) ---------- */
-
-.baiyar-hero__shoe {
-  animation: baiyar-float 5s ease-in-out infinite;
-}
-
-@keyframes baiyar-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 /* ---------- Best sellers grid (WooCommerce's own <li class="product"> markup via
    wc_get_template_part('content','product') - not something we can hand Tailwind classes to, since we
    don't write that HTML) ---------- */
@@ -698,10 +716,6 @@ ul.wc_payment_methods li {
   .baiyar-reveal {
     opacity: 1 !important;
     transform: none !important;
-  }
-
-  .baiyar-hero__shoe {
-    animation: none !important;
   }
 }
 

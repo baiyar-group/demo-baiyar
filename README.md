@@ -68,6 +68,11 @@ currency/gateway settings every time, so it's always idempotent rather than sile
 - `bin/product-images/` - generated SVG product photos (sneaker/sandal line art on Baiyar-token
   backdrops), sideloaded onto each product by `setup.sh` via `wp media import --featured_image`.
 - `bin/setup.sh` - provisions the store via WP-CLI (run through the `wpcli` compose service).
+- `assets/img/hero-photo.jpg` - the homepage hero banner, a free Unsplash-licensed stock photo (royalty-
+  free, no attribution required, credit appreciated - photo id `1635252261174-aa7945dc2902`). The header
+  is `position: sticky` (stays onscreen while scrolling) and the hero photo is pulled up behind it with a
+  negative margin so the pill nav visibly floats on top of the image, closer to how Allbirds' own hero
+  banner behaves.
 
 ## Store brand vs. payment processor
 
@@ -116,6 +121,19 @@ method itself. Keep this split if either brand's content changes.
   CSS assumes are still there; standard practice when adding Tailwind to a site with existing CSS. When
   a Tailwind-rendered page looks subtly wrong, check for a class-name collision with existing markup
   before assuming it's a specificity issue.
+- The child theme's stylesheet was enqueued with the theme header's static `Version: 0.1.0` as its cache-
+  busting `?ver=`. That number never changes just because `style.css`'s *contents* change, so every CSS
+  fix in this repo kept getting served from the browser's cache under the same URL - correct on disk,
+  invisible in the browser, several rounds of "this still isn't fixed" that were really just stale CSS.
+  Enqueue with `filemtime()` instead so the version changes on every save.
+- `position: sticky` silently does nothing (no console error, computed style still says `sticky`) if any
+  ancestor between the sticky element and `<html>` has `overflow` other than `visible` on either axis -
+  even `overflow-x: hidden` alone, since the other axis then resolves to `auto` as a side effect, and even
+  when that ancestor never actually has anything to scroll. Storefront sets `overflow-x: hidden` on both
+  `<body>` and `.site` (`#page`, the wrapper div right inside `<body>`) just to stop horizontal scroll -
+  that alone broke our sticky header. Fixed by resetting `body`/`#page` back to `overflow-x: visible` and
+  doing the actual horizontal clip on `<html>` instead, which doesn't create the same mismatch. Worth
+  checking for on any "sticky isn't sticking" bug before suspecting z-index or specificity.
 
 ## Status
 

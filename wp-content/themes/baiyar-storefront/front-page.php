@@ -5,9 +5,10 @@
  * hierarchy), so no "front page" option needs to be chosen in wp-admin.
  *
  * Styled with Tailwind utility classes (loaded via the Play CDN, see functions.php) since this is
- * markup we author ourselves. `.baiyar-trust__item` / `.baiyar-category-tile` / `.baiyar-story` /
- * `.baiyar-hero__shoe` are kept only as hooks for the scroll-reveal JS and the hero float keyframes in
- * style.css - not for visual styling, which is all Tailwind classes here. */
+ * markup we author ourselves. `.baiyar-trust__item` / `.baiyar-category-tile` / `.baiyar-story` are
+ * kept only as hooks for the scroll-reveal JS, not for visual styling, which is all Tailwind classes
+ * here. `.baiyar-hero-photo` is a real styling hook though (style.css) - it pulls the hero up behind
+ * the sticky header so the header floats on top of the photo, Allbirds-style. */
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -16,36 +17,34 @@ get_header(); ?>
 
 <main id="main" class="site-main">
 
-  <section class="flex flex-wrap items-center gap-12 bg-gradient-to-b from-neutral-50 to-white px-6 py-16 md:py-24 lg:px-16">
-    <div class="max-w-xl flex-1" style="min-width: 320px">
-      <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-600"><?php esc_html_e('Koleksi harian', 'baiyar-storefront'); ?></p>
-      <h1 class="text-4xl font-bold leading-tight tracking-tight text-ink md:text-6xl">
-        <?php esc_html_e('Sepatu dan sandal yang enak dipakai dari pagi sampai malam.', 'baiyar-storefront'); ?>
-      </h1>
-      <p class="mt-5 max-w-md text-lg text-neutral-600">
-        <?php esc_html_e('Material daur ulang, bentuk yang nyaman, harga yang masuk akal - dan checkout yang beneran jalan, lewat Baiyar.', 'baiyar-storefront'); ?>
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="<?php echo esc_url(get_term_link('sneakers', 'product_cat')); ?>"
-           class="rounded-md bg-brand-gradient px-7 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-          <?php esc_html_e('Belanja Sneakers', 'baiyar-storefront'); ?>
-        </a>
-        <a href="<?php echo esc_url(get_term_link('sandal', 'product_cat')); ?>"
-           class="rounded-md border border-neutral-300 bg-white px-7 py-3 text-sm font-semibold uppercase tracking-wide text-ink transition hover:-translate-y-0.5 hover:shadow-md">
-          <?php esc_html_e('Belanja Sandal', 'baiyar-storefront'); ?>
-        </a>
+  <section class="baiyar-hero-photo relative flex min-h-[520px] items-end overflow-hidden md:min-h-[640px]">
+    <img
+      src="<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/hero-photo.jpg"
+      alt="<?php esc_attr_e('Seseorang berjalan santai memakai sneakers Lapik di jalan setapak.', 'baiyar-storefront'); ?>"
+      class="absolute inset-0 h-full w-full object-cover"
+      fetchpriority="high"
+    />
+    <span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-brand-700/10"></span>
+    <div class="relative w-full px-6 pb-14 pt-32 md:px-16 md:pb-20">
+      <div class="max-w-xl">
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-brand-100"><?php esc_html_e('Koleksi harian', 'baiyar-storefront'); ?></p>
+        <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
+          <?php esc_html_e('Sepatu dan sandal yang enak dipakai dari pagi sampai malam.', 'baiyar-storefront'); ?>
+        </h1>
+        <p class="mt-5 max-w-md text-lg text-white/85">
+          <?php esc_html_e('Material daur ulang, bentuk yang nyaman, harga yang masuk akal - dan checkout yang beneran jalan, lewat Baiyar.', 'baiyar-storefront'); ?>
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="<?php echo esc_url(get_term_link('sneakers', 'product_cat')); ?>"
+             class="rounded-md bg-brand-gradient px-7 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
+            <?php esc_html_e('Belanja Sneakers', 'baiyar-storefront'); ?>
+          </a>
+          <a href="<?php echo esc_url(get_term_link('sandal', 'product_cat')); ?>"
+             class="rounded-md border border-white/70 bg-white/10 px-7 py-3 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white/20">
+            <?php esc_html_e('Belanja Sandal', 'baiyar-storefront'); ?>
+          </a>
+        </div>
       </div>
-    </div>
-    <div class="relative flex flex-1 items-center justify-center" style="min-width: 320px; min-height: 320px" aria-hidden="true">
-      <div class="absolute h-[420px] w-[420px] max-w-[90%] rounded-full" style="background: radial-gradient(circle at 35% 30%, #dbe6fe, #eff4ff 60%, transparent 72%)"></div>
-      <?php
-      $hero_query = new WP_Query(['post_type' => 'product', 'name' => 'runner-knit-sneakers', 'posts_per_page' => 1]);
-      if ($hero_query->have_posts()) {
-          $hero_query->the_post();
-          echo get_the_post_thumbnail(get_the_ID(), 'large', ['class' => 'baiyar-hero__shoe relative w-[min(420px,85%)] rounded-xl shadow-xl']);
-          wp_reset_postdata();
-      }
-      ?>
     </div>
   </section>
 
