@@ -157,6 +157,26 @@ method itself. Keep this split if either brand's content changes.
   (which has no `position: fixed` descendants) avoided that trap entirely - when something that's
   `position: fixed` stops behaving like it, check every ancestor for a new `transform`, not just the
   stacking-context/z-index angle documented above.
+- WooCommerce's own cart styling (`woocommerce.css`, enqueued by Storefront's WooCommerce integration
+  class) was landing *after* our child theme's stylesheet in the page - not because of any explicit
+  priority, just because that's the order their two separate `wp_enqueue_style()` hooks happened to fire
+  in, and nothing told WordPress's dependency resolver otherwise. For any selector where we and
+  `woocommerce.css` target the exact same specificity (easy to do by accident on cart/product markup,
+  since we're often matching their own class names), theirs silently won by loading later - this is what
+  made the cart icon's padding/flex reset not apply at all, no error, just the "wrong" rule winning a tie.
+  Fixed by adding `'storefront-woocommerce-style'` as an explicit dependency on our own `wp_enqueue_style`
+  call, which reorders the final `<link>` order regardless of hook timing. Anywhere our CSS matches a
+  WooCommerce-generated class and seems to be silently ignored, check `<link>` order in the rendered
+  `<head>` before assuming it's a specificity or caching problem - by now the third distinct "our rule is
+  correct but something else's cascade position wins anyway" bug in this file, after the two above.
+- The cart icon's own vertical centering was *also* a cascade casualty of that same bug (one level
+  removed): once the dependency fix let our `display: flex` actually apply, the icon snapped to properly
+  centered immediately - no separate fix needed. The *logo*, on the other hand, turned out to have a
+  real bug of its own once vertical centering was checked properly: `.site-branding` carries a sizeable
+  bottom margin from Storefront's original two-row header design (meant to separate branding from the
+  nav row underneath it), and margins count toward a flex item's size for `align-items: center` purposes
+  - so the pill was centering that *padded* box, not the visible wordmark inside it, pushing the logo
+  text above center. Reset with a plain `.site-branding { margin-bottom: 0 }`.
 
 ## Status
 

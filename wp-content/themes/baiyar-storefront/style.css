@@ -167,6 +167,39 @@ html {
 
 .site-header-cart .cart-contents {
   padding: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--baiyar-ink);
+}
+
+/* Storefront appends its own Font Awesome basket glyph via ::after (float:right) - now redundant and
+   duplicate-looking next to our own inline SVG icon (see storefront_cart_link() in functions.php). */
+.cart-contents::after {
+  display: none !important;
+}
+
+.baiyar-cart-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.baiyar-cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 9999px;
+  background: var(--baiyar-brand-600);
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 #masthead > .col-full,
@@ -240,6 +273,14 @@ html {
   display: none !important;
 }
 
+/* Storefront's base CSS gives .site-branding a sizeable bottom margin, meant to separate it from the
+   nav row underneath in its original two-row header - in our single-row pill, that margin just pads
+   the flex item unevenly (0 top, ~23px bottom), so #masthead's align-items:center centers that whole
+   padded box instead of the actual logo text, pushing the visible wordmark above center. */
+.site-branding {
+  margin-bottom: 0;
+}
+
 /* The store's own brand mark: a styled text wordmark (no logo image - see functions.php). Weight 800 +
    tight tracking + a small brand-colored dot reads more like a considered wordmark than a plain bold
    page heading, without needing an actual logo asset. */
@@ -261,7 +302,7 @@ html {
   width: 6px;
   height: 6px;
   margin-left: 2px;
-  margin-bottom: 14px;
+  align-self: flex-start;
   border-radius: 50%;
   background: var(--baiyar-brand-500);
 }

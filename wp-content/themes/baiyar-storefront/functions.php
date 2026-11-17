@@ -8,6 +8,33 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Storefront's own storefront_cart_link() spells out the subtotal + "N items" in full next to the
+// icon ("Rp0  0 items"), which made the cart corner far heavier than the logo on the opposite side -
+// enough that a nav menu centered dead in the middle of the pill still *read* as off-center against
+// that lopsided weight. A plain icon + a small count badge (hidden at zero, like most real carts) is
+// both closer to the Allbirds reference and fixes that balance. Storefront wraps its own definition in
+// `if (!function_exists(...))`, the standard WP "pluggable function" pattern - defining it here first
+// (child themes load before the parent) makes Storefront skip its own version, including inside
+// storefront_cart_link_fragment(), which calls this same function for the AJAX add-to-cart refresh, so
+// nothing else needs to change for that to stay in sync.
+if (!function_exists('storefront_cart_link')) {
+    function storefront_cart_link()
+    {
+        if (!function_exists('WC') || !WC()->cart) {
+            return;
+        }
+        $count = WC()->cart->get_cart_contents_count();
+        ?>
+        <a class="cart-contents" href="<?php echo esc_url(wc_get_cart_url()); ?>" title="<?php esc_attr_e('View your shopping cart', 'storefront'); ?>">
+            <svg class="baiyar-cart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1 11.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.5L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+            <?php if ($count > 0) : ?>
+                <span class="count baiyar-cart-badge"><?php echo intval($count); ?></span>
+            <?php endif; ?>
+        </a>
+        <?php
+    }
+}
+
 add_action('wp_enqueue_scripts', function () {
     $theme = wp_get_theme();
 
@@ -15,10 +42,17 @@ add_action('wp_enqueue_scripts', function () {
     // filemtime(), not the theme's static "Version:" header - that number only changes when someone
     // remembers to bump it, so every style.css edit was silently cached under the old ?ver= forever
     // (this is why fixes kept "not showing up" in the browser despite being correct on disk).
+    //
+    // Dependencies: 'storefront-style' (the parent theme's own base CSS) AND
+    // 'storefront-woocommerce-style' (Storefront's cart/product/checkout CSS, enqueued separately by
+    // WooCommerce's own integration class at a *later* hook than this one - without listing it here,
+    // our <link> landed BEFORE woocommerce.css's in the page, not after, so any rule where we and
+    // woocommerce.css target the exact same selector at equal specificity, woocommerce.css silently
+    // won by loading later. That's what broke the cart icon's own flex/padding reset further down.
     wp_enqueue_style(
         'baiyar-storefront-style',
         get_stylesheet_uri(),
-        ['storefront-style'],
+        ['storefront-style', 'storefront-woocommerce-style'],
         filemtime(get_stylesheet_directory() . '/style.css'),
     );
 
