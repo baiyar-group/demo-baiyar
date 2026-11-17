@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run inside the `wpcli` container: docker compose run --rm wpcli bash /setup/setup.sh
-# Installs WordPress, WooCommerce, the Storefront theme, the Baiyar plugin stub, and sample products
-# with working add-to-cart / cart / checkout pages (Storefront + WooCommerce provide all of that out of
-# the box; nothing in the plugin touches cart or product rendering).
+# Installs WordPress, WooCommerce, the Baiyar Storefront child theme, the Baiyar plugin stub, and sample
+# products with working add-to-cart / cart / checkout pages (Storefront + WooCommerce provide all of
+# that out of the box; the child theme only restyles it with Baiyar's tokens and motion).
 set -euo pipefail
 
 DEMO_PORT="${DEMO_PORT:-8080}"
@@ -25,16 +25,24 @@ if ! wp core is-installed 2>/dev/null; then
     --skip-email
 fi
 
+echo "Pointing the site at the current DEMO_PORT..."
+wp option update siteurl "http://localhost:${DEMO_PORT}"
+wp option update home "http://localhost:${DEMO_PORT}"
+
 wp rewrite structure '/%postname%/' --hard
 
-echo "Installing Storefront theme..."
-wp theme install storefront --activate
+echo "Installing Storefront (parent theme) and activating the Baiyar Storefront child theme..."
+wp theme install storefront
+wp theme activate baiyar-storefront
 
 echo "Installing and activating WooCommerce..."
 wp plugin install woocommerce --activate
 
 echo "Activating the Baiyar plugin stub..."
 wp plugin activate baiyar-for-woocommerce
+
+echo "Enabling the Baiyar gateway at checkout..."
+wp eval "update_option('woocommerce_baiyar_settings', ['enabled' => 'yes', 'title' => 'Baiyar', 'description' => 'Pay with QRIS, virtual account, e-wallet or a retail outlet.']);"
 
 echo "Setting the store currency to IDR..."
 wp option update woocommerce_currency IDR

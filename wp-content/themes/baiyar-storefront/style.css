@@ -1,0 +1,310 @@
+/*
+Theme Name: Baiyar Storefront
+Template: storefront
+Description: Storefront child theme styled with Baiyar's own tokens (color, type, radius, shadow, motion) for the demo-baiyar WooCommerce exploration.
+Author: Baiyar
+Version: 0.1.0
+Text Domain: baiyar-storefront
+*/
+
+/* Baiyar design tokens, hand-synced from packages/ui/src/tokens.ts (baiyar-payment-platform).
+   Never invent a new color/radius/shadow here - copy it from tokens.ts instead. */
+:root {
+  --baiyar-brand-50: #eff4ff;
+  --baiyar-brand-100: #dbe6fe;
+  --baiyar-brand-400: #5b93f5;
+  --baiyar-brand-500: #3b82f6;
+  --baiyar-brand-600: #2563eb;
+  --baiyar-brand-700: #1d4ed8;
+  --baiyar-brand-gradient: linear-gradient(180deg, #1d4ed8 0%, #3b82f6 50%, #2563eb 100%);
+
+  --baiyar-neutral-950: #0b0f19;
+  --baiyar-neutral-900: #111827;
+  --baiyar-neutral-800: #1f2937;
+  --baiyar-neutral-700: #374151;
+  --baiyar-neutral-600: #4b5563;
+  --baiyar-neutral-500: #6b7280;
+  --baiyar-neutral-400: #9ca3af;
+  --baiyar-neutral-300: #d1d5db;
+  --baiyar-neutral-200: #e5e7eb;
+  --baiyar-neutral-100: #f3f4f6;
+  --baiyar-neutral-50: #f9fafb;
+
+  --baiyar-success-600: #16a34a;
+  --baiyar-success-700: #15803d;
+  --baiyar-success-100: #dcfce7;
+  --baiyar-error-600: #dc2626;
+  --baiyar-error-700: #b91c1c;
+  --baiyar-error-100: #fee2e2;
+  --baiyar-warning-600: #d97706;
+  --baiyar-warning-100: #fef3c7;
+
+  --baiyar-radius-xs: 6px;
+  --baiyar-radius-sm: 8px;
+  --baiyar-radius-md: 10px;
+  --baiyar-radius-lg: 14px;
+  --baiyar-radius-xl: 18px;
+  --baiyar-radius-2xl: 24px;
+
+  --baiyar-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --baiyar-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --baiyar-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
+  --baiyar-shadow-xl: 0 20px 48px rgba(15, 23, 42, 0.1);
+
+  --baiyar-ink: #0f172c;
+  --baiyar-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("assets/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+body,
+input,
+select,
+textarea,
+button {
+  font-family:
+    "Satoshi",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--baiyar-ink);
+}
+
+/* ---------- Layout / surfaces ---------- */
+
+body {
+  background: var(--baiyar-neutral-50);
+}
+
+.site-header,
+#masthead {
+  background: #ffffff;
+  border-bottom: 1px solid var(--baiyar-neutral-200);
+}
+
+.site-branding img.custom-logo {
+  height: 28px;
+  width: auto;
+  transition: transform 200ms var(--baiyar-ease);
+}
+
+.site-branding a:hover img.custom-logo {
+  transform: translateY(-1px);
+}
+
+/* ---------- Typography ---------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--baiyar-ink);
+}
+
+a {
+  color: var(--baiyar-brand-600);
+}
+
+a:hover {
+  color: var(--baiyar-brand-700);
+}
+
+/* Prices read like a dev/ledger surface, same as the dashboard's amount styling. */
+.woocommerce .price,
+.woocommerce-Price-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--baiyar-ink);
+}
+
+/* ---------- Buttons ---------- */
+
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+a.wc-block-components-button,
+button.wc-block-components-button,
+.wp-block-button__link {
+  background: var(--baiyar-brand-gradient) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--baiyar-radius-md) !important;
+  box-shadow: var(--baiyar-shadow-md);
+  font-weight: 600;
+  letter-spacing: 0;
+  transition:
+    transform 180ms var(--baiyar-ease),
+    box-shadow 180ms var(--baiyar-ease),
+    filter 180ms var(--baiyar-ease);
+}
+
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover,
+.woocommerce #respond input#submit:hover,
+a.wc-block-components-button:hover,
+button.wc-block-components-button:hover,
+.wp-block-button__link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--baiyar-shadow-lg);
+  filter: brightness(1.04);
+  color: #ffffff !important;
+}
+
+.woocommerce a.button:active,
+.woocommerce button.button:active,
+.woocommerce input.button:active {
+  transform: translateY(0);
+  box-shadow: var(--baiyar-shadow-sm);
+}
+
+/* Secondary / outlined buttons (quantity steppers, "Return to shop", block secondary) */
+.woocommerce a.button.alt,
+.quantity .qty,
+.wc-block-components-quantity-selector {
+  border-radius: var(--baiyar-radius-sm) !important;
+}
+
+/* Added-to-cart success pulse, applied by assets/js/baiyar-storefront.js */
+.baiyar-added-pulse {
+  animation: baiyar-pulse 420ms var(--baiyar-ease);
+}
+
+@keyframes baiyar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+/* ---------- Product cards ---------- */
+
+ul.products li.product,
+.wc-block-grid__product {
+  background: #ffffff;
+  border: 1px solid var(--baiyar-neutral-200);
+  border-radius: var(--baiyar-radius-xl);
+  box-shadow: var(--baiyar-shadow-sm);
+  padding: 16px !important;
+  transition:
+    transform 220ms var(--baiyar-ease),
+    box-shadow 220ms var(--baiyar-ease),
+    border-color 220ms var(--baiyar-ease);
+}
+
+ul.products li.product:hover,
+.wc-block-grid__product:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--baiyar-shadow-lg);
+  border-color: var(--baiyar-brand-100);
+}
+
+ul.products li.product img,
+.wc-block-grid__product img {
+  border-radius: var(--baiyar-radius-lg);
+}
+
+ul.products li.product .price {
+  color: var(--baiyar-brand-700) !important;
+}
+
+/* Scroll-reveal: fade-up on first paint into view, applied by assets/js/baiyar-storefront.js.
+   Starts hidden only if JS can run the reveal - see the no-js fallback below. */
+.baiyar-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 500ms var(--baiyar-ease),
+    transform 500ms var(--baiyar-ease);
+}
+
+.baiyar-reveal.baiyar-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.no-js .baiyar-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Cart icon bump ---------- */
+
+.baiyar-cart-bump {
+  animation: baiyar-bump 360ms var(--baiyar-ease);
+}
+
+@keyframes baiyar-bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Focus ring (same rule as apps/landing and apps/checkout) ---------- */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+.woocommerce a.button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--baiyar-brand-600);
+  color: #ffffff;
+}
+
+/* ---------- Checkout payment box ---------- */
+
+.wc-block-components-radio-control__option,
+ul.wc_payment_methods li {
+  border-radius: var(--baiyar-radius-lg) !important;
+  transition: border-color 180ms var(--baiyar-ease), box-shadow 180ms var(--baiyar-ease);
+}
+
+.wc-block-components-radio-control__option--checked {
+  border-color: var(--baiyar-brand-600) !important;
+  box-shadow: 0 0 0 1px var(--baiyar-brand-600);
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .baiyar-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

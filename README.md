@@ -27,23 +27,30 @@ docker compose run --rm wpcli bash /setup/setup.sh
 
 Port 8080 taken? Set `DEMO_PORT` first, e.g. `DEMO_PORT=18080 docker compose up -d && DEMO_PORT=18080 docker compose run --rm wpcli bash /setup/setup.sh`.
 
-The second command installs WordPress, WooCommerce, the Storefront theme, activates "Baiyar for
-WooCommerce" (mounted from `wp-content/plugins/baiyar-for-woocommerce`), and creates four sample
-products. Takes under a minute.
+The second command installs WordPress, WooCommerce, the Baiyar Storefront child theme, activates
+"Baiyar for WooCommerce" (mounted from `wp-content/plugins/baiyar-for-woocommerce`), enables the Baiyar
+gateway, and creates four sample products in IDR. Takes under a minute.
 
-- Shop, product pages, add to cart, cart, checkout: click "Shop" in the Storefront menu - all stock
-  WooCommerce/Storefront, nothing custom. Prices are in IDR.
+- Shop, product pages, add to cart, cart, checkout: click "Shop" in the menu (use the link, not a raw
+  `?page_id=` URL - WooCommerce's shop-page detection only kicks in on the canonical `/shop/` URL once
+  pretty permalinks are on). Styled with Baiyar's own tokens - see "The theme" below.
 - Admin: `http://localhost:8080/wp-admin` (`admin` / `admin`)
-- Payment methods at checkout: `wp-admin > WooCommerce > Settings > Payments` - enable "Baiyar" there to
-  see it next to the stock gateways (it won't actually charge anything yet, see below).
+- Payment options at checkout already show "Baiyar" selected - the gateway is enabled by `setup.sh`.
 
-Re-running `setup.sh` is safe (products are created with `|| true` so a re-run just skips duplicates).
+Re-running `setup.sh` is safe (products are created with `|| true` so a re-run just skips duplicates; the
+theme/plugin/currency/gateway steps are all idempotent).
 
 ## What's here
 
 - `wp-content/plugins/baiyar-for-woocommerce/` - a plugin stub. `process_payment()` and the webhook
   handler (`class-wc-gateway-baiyar.php`) are `TODO`s, not implemented - the point right now is the
   store/checkout flow, not a working gateway.
+- `wp-content/themes/baiyar-storefront/` - a Storefront child theme restyled with Baiyar's own color,
+  type, radius, shadow and motion tokens (hand-synced from `packages/ui/src/tokens.ts` in
+  `baiyar-payment-platform` - see that repo's `baiyar-theming-ui` skill). The real Baiyar wordmark
+  replaces the default site title; buttons use the brand gradient with a hover lift; product cards get a
+  shadow lift on hover; add-to-cart gives a short pulse and the header cart icon bumps; the product grid
+  fades up into view. Every animation is skipped under `prefers-reduced-motion`, per that skill's rule.
 - `bin/setup.sh` - provisions the store via WP-CLI (run through the `wpcli` compose service).
 
 ## Findings so far
@@ -58,6 +65,9 @@ Re-running `setup.sh` is safe (products are created with `|| true` so a re-run j
   Storefront for free - nothing to build there. Confirms the earlier call: Baiyar doesn't need its own
   catalog/cart, just a line-items array on `CreatePaymentRequest` to mirror what WooCommerce already
   computed at checkout time.
+- WooCommerce's shop-page detection (`is_shop()`) does not reliably trigger on a raw `?page_id=` request
+  once pretty permalinks are active, even though the page ID is correct - only the canonical `/shop/`
+  URL does. Cost some time chasing a phantom "empty product grid" bug that was really just this.
 
 ## Status
 
