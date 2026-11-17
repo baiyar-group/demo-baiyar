@@ -131,10 +131,10 @@ html {
   top: 16px;
 }
 
-/* The hero banner (see front-page.php) is pulled up by the header's own resting outer height (16px
-   margin-top + 52px min-height) so it starts right where the header's box starts, instead of leaving a
-   gap below it - the pill then visibly floats on top of the photo, the way Allbirds' bar sits on top of
-   its hero image, rather than the photo starting underneath it.
+/* The hero banner (see front-page.php) gets the same 16px gap on top as the left/right/bottom sides
+   below give it, so it reads as one evenly-inset rounded card rather than bleeding up behind the
+   header on just one edge - a deliberate change from the photo-behind-the-header look this used to
+   have (negative margin-top), which doesn't fit a card with visible spacing on every other side.
 
    It also has to break out of Storefront's own content width: the "storefront-align-wide" body class
    centers #main/.content-area inside a constrained max-width (not the full viewport), same as every
@@ -145,7 +145,7 @@ html {
    deliberate 16px gutter back out of that full width on each side, for the rounded-card look (as
    opposed to true edge-to-edge) rather than reinstating the old centered-column inset. */
 .baiyar-hero-photo {
-  margin-top: -68px;
+  margin-top: 16px;
   width: calc(100vw - 32px);
   margin-left: calc(50% - 50vw + 16px);
   margin-right: calc(50% - 50vw + 16px);
