@@ -80,13 +80,74 @@ button {
 /* ---------- Layout / surfaces ---------- */
 
 body {
-  background: var(--baiyar-neutral-50);
+  background: var(--baiyar-neutral-100);
 }
 
+/* The header is a single rounded pill (logo, nav, cart icon in one row), floating over the page
+   background - not a flat full-width square bar. Storefront renders it as two stacked rows (branding+
+   search, then nav+cart), each its own ".col-full"; flexing #masthead puts those two rows side by side
+   in one line instead, and each inner .col-full is freed from its own max-width/centering so it only
+   takes the width its content needs. */
 .site-header,
 #masthead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 4px 8px 4px 24px;
   background: #ffffff;
-  border-bottom: 1px solid var(--baiyar-neutral-200);
+  border: none;
+  border-radius: 9999px;
+  box-shadow: var(--baiyar-shadow-md);
+}
+
+/* Storefront's own nav/cart-link padding (1.618em, its golden-ratio vertical rhythm) was built for a
+   plain full-width bar, not a compact pill - it alone made the pill much taller than intended. */
+.main-navigation ul.menu > li > a {
+  padding: 0.75em 0.875em;
+}
+
+.site-header-cart .cart-contents {
+  padding: 0;
+}
+
+#masthead > .col-full,
+#masthead > .storefront-primary-navigation {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+#masthead > .col-full {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#masthead > .storefront-primary-navigation {
+  flex: 1 1 auto;
+}
+
+#masthead > .storefront-primary-navigation > .col-full {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* The inline search box doesn't fit a single-row pill the way Allbirds' icon-only search does - hidden
+   for now rather than half-built (an icon that opens nothing would be worse). */
+#masthead .site-search {
+  display: none !important;
 }
 
 /* The store's own brand mark: a styled text wordmark (no logo image - see functions.php). */
@@ -229,18 +290,24 @@ ul.products li.product:hover,
   border-color: var(--baiyar-brand-100);
 }
 
-ul.products li.product img,
-.baiyar-bestseller-grid li.product img,
-.wc-block-grid__product img {
-  border-radius: var(--baiyar-radius-lg);
-  /* WordPress can't read an SVG's intrinsic size (no GD/Imagick support for it), so the placeholder
-     product photos sometimes get a bogus 1x1 "natural size" baked into their width/height attributes.
-     Force the real display size instead of trusting those attributes. */
+/* WordPress can't read an SVG's intrinsic size (no GD/Imagick support for the format), so every one of
+   this demo's product photos - gallery, thumbnails, mini-cart, grids, wherever - gets a bogus
+   width="1" height="1" baked into its <img> attributes. A broken 1x1 image collapses its container
+   (the single-product gallery, in particular, looked completely empty because of this), so this is a
+   global fix by attribute selector rather than chasing every place a product photo shows up one at a
+   time - mirrors a real DTC store's product shots, which are never this size either. */
+img[width="1"][height="1"] {
   width: 100% !important;
   height: auto !important;
   aspect-ratio: 1 / 1;
   object-fit: contain;
   display: block;
+}
+
+ul.products li.product img,
+.baiyar-bestseller-grid li.product img,
+.wc-block-grid__product img {
+  border-radius: var(--baiyar-radius-lg);
 }
 
 ul.products li.product .price,
@@ -513,8 +580,9 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 .woocommerce a.button:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.28);
-  outline-offset: 3px;
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 ::selection {

@@ -106,6 +106,20 @@ add_action('init', function () {
     remove_action('storefront_sidebar', 'storefront_get_sidebar');
 });
 
+// Storefront's prev/next-product tabs (peeking in from the page edges, by publish date - nothing to do
+// with the Sneakers/Sandal categories) weren't something we asked for and don't fit a store this small.
+add_action('init', function () {
+    remove_action('woocommerce_after_single_product_summary', 'storefront_single_product_pagination', 30);
+});
+
+// Storefront's sticky add-to-cart bar is a fixed-position element whose JS toggles it based on the
+// scroll position of the *original* in-flow header. Our header floats with its own margin instead of
+// sitting flush at the top, which throws that measurement off - the bar was staying visible even back
+// at the top of the page, overlapping our pill header. Not worth re-tuning the JS for a demo.
+add_action('init', function () {
+    remove_action('storefront_after_footer', 'storefront_sticky_single_add_to_cart', 999);
+});
+
 /** The real Baiyar wordmark, inline (so `currentColor`/height can be set from CSS), for spots other
  * than the header logo (e.g. the footer payment line) that custom-logo can't reach. */
 function baiyar_inline_logo($height = 20)
