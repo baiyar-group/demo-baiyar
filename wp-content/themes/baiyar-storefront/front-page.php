@@ -1,14 +1,16 @@
 <?php
-/** The store's homepage: hero, trust bar, category tiles, a Best Sellers grid (featured products,
- * rendered through WooCommerce's own loop templates so it behaves exactly like the shop page), and a
+/** The store's homepage: hero, trust bar, a shop-by-category carousel, a bestsellers product carousel
+ * (rendered through WooCommerce's own loop templates, via this theme's woocommerce/content-product.php
+ * override, so it behaves exactly like the shop page everywhere else that template is used), and a
  * short brand-story block. Takes priority over Settings > Reading automatically (WP template
  * hierarchy), so no "front page" option needs to be chosen in wp-admin.
  *
  * Styled with Tailwind utility classes (loaded via the Play CDN, see functions.php) since this is
- * markup we author ourselves. `.baiyar-trust__item` / `.baiyar-category-tile` / `.baiyar-story` are
- * kept only as hooks for the scroll-reveal JS, not for visual styling, which is all Tailwind classes
- * here. `.baiyar-hero-photo` is a real styling hook though (style.css) - it pulls the hero up behind
- * the sticky header so the header floats on top of the photo, Allbirds-style. */
+ * markup we author ourselves. `.baiyar-trust__item` / `.baiyar-story` are kept only as hooks for the
+ * scroll-reveal JS; `.baiyar-shop-tile` / `.baiyar-carousel-track` / `.baiyar-carousel-arrow` are real
+ * styling hooks (style.css) for the two horizontal carousels, wired up by wireCarousels() in
+ * assets/js/baiyar-storefront.js. `.baiyar-hero-photo` is a real styling hook too - it pulls the hero up
+ * behind the sticky header so the header floats on top of the photo, Allbirds-style. */
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -48,7 +50,7 @@ get_header(); ?>
     </div>
   </section>
 
-  <section class="mx-auto grid max-w-5xl grid-cols-2 gap-6 border-y border-neutral-200 px-6 py-10 md:grid-cols-4">
+  <section class="grid grid-cols-2 gap-6 border-y border-neutral-200 px-6 py-10 md:grid-cols-4">
     <div class="baiyar-trust__item text-center">
       <span class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -75,44 +77,57 @@ get_header(); ?>
     </div>
   </section>
 
-  <section class="mx-auto grid max-w-5xl grid-cols-1 gap-5 px-6 py-12 md:grid-cols-2">
-    <a href="<?php echo esc_url(get_term_link('sneakers', 'product_cat')); ?>"
-       class="baiyar-category-tile group relative flex min-h-[320px] flex-col justify-end overflow-hidden rounded-xl bg-cover bg-center p-7 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-       style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-sneakers.svg')">
-      <span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/0 to-transparent"></span>
-      <span class="relative text-2xl font-semibold text-white"><?php esc_html_e('Sneakers', 'baiyar-storefront'); ?></span>
-      <span class="relative text-sm font-medium text-white/90"><?php esc_html_e('Lihat koleksi', 'baiyar-storefront'); ?> &rarr;</span>
-    </a>
-    <a href="<?php echo esc_url(get_term_link('sandal', 'product_cat')); ?>"
-       class="baiyar-category-tile group relative flex min-h-[320px] flex-col justify-end overflow-hidden rounded-xl bg-cover bg-center p-7 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-       style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-sandal.svg')">
-      <span class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/0 to-transparent"></span>
-      <span class="relative text-2xl font-semibold text-white"><?php esc_html_e('Sandal', 'baiyar-storefront'); ?></span>
-      <span class="relative text-sm font-medium text-white/90"><?php esc_html_e('Lihat koleksi', 'baiyar-storefront'); ?> &rarr;</span>
-    </a>
+  <section class="baiyar-shop-carousel-section pt-4">
+    <div class="baiyar-shop-tiles">
+      <div class="baiyar-shop-tile"
+           style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-new-arrivals.jpg')">
+        <span class="baiyar-shop-tile__eyebrow"><?php esc_html_e('Koleksi baru', 'baiyar-storefront'); ?></span>
+        <span class="baiyar-shop-tile__pills">
+          <a class="baiyar-shop-tile__pill" href="<?php echo esc_url(get_term_link('sneakers', 'product_cat')); ?>"><?php esc_html_e('Belanja Sneakers', 'baiyar-storefront'); ?></a>
+          <a class="baiyar-shop-tile__pill" href="<?php echo esc_url(get_term_link('sandal', 'product_cat')); ?>"><?php esc_html_e('Belanja Sandal', 'baiyar-storefront'); ?></a>
+        </span>
+      </div>
+      <a href="<?php echo esc_url(get_term_link('sneakers', 'product_cat')); ?>"
+         class="baiyar-shop-tile"
+         style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-sneakers.jpg')">
+        <span class="baiyar-shop-tile__pill"><?php esc_html_e('Sneakers', 'baiyar-storefront'); ?></span>
+      </a>
+      <a href="<?php echo esc_url(get_term_link('sandal', 'product_cat')); ?>"
+         class="baiyar-shop-tile"
+         style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-sandal.jpg')">
+        <span class="baiyar-shop-tile__pill"><?php esc_html_e('Sandal', 'baiyar-storefront'); ?></span>
+      </a>
+      <a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>"
+         class="baiyar-shop-tile"
+         style="background-image: url('<?php echo esc_url(get_stylesheet_directory_uri()); ?>/assets/img/tile-bestseller.jpg')">
+        <span class="baiyar-shop-tile__pill"><?php esc_html_e('Best Seller', 'baiyar-storefront'); ?></span>
+      </a>
+    </div>
   </section>
 
-  <section class="py-6 pb-14">
-    <div class="mx-auto flex max-w-5xl items-baseline justify-between px-6">
-      <h2 class="text-2xl font-semibold text-ink"><?php esc_html_e('Paling laris', 'baiyar-storefront'); ?></h2>
-      <a class="whitespace-nowrap text-sm font-semibold text-brand-600 hover:text-brand-700" href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>"><?php esc_html_e('Lihat semua', 'baiyar-storefront'); ?> &rarr;</a>
+  <section class="pt-10 pb-14">
+    <div class="baiyar-section-head">
+      <h2 class="baiyar-section-title"><?php esc_html_e('Best Sellers', 'baiyar-storefront'); ?></h2>
+      <div class="baiyar-carousel-arrows">
+        <button type="button" class="baiyar-carousel-arrow" data-carousel-prev="bestsellers" aria-label="<?php esc_attr_e('Sebelumnya', 'baiyar-storefront'); ?>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="baiyar-carousel-arrow" data-carousel-next="bestsellers" aria-label="<?php esc_attr_e('Berikutnya', 'baiyar-storefront'); ?>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     </div>
     <?php
     $bestsellers = new WP_Query([
         'post_type' => 'product',
-        'posts_per_page' => 4,
-        'tax_query' => [[
-            // WooCommerce stores "featured" as a product_visibility term, not post meta.
-            'taxonomy' => 'product_visibility',
-            'field' => 'name',
-            'terms' => 'featured',
-        ]],
+        'posts_per_page' => 6,
+        'orderby' => 'menu_order title',
     ]);
     if ($bestsellers->have_posts()) :
         // A plain wrapper, not <ul class="products"> (woocommerce_product_loop_start()) - Storefront's
-        // own product-grid CSS targets .products specifically and fought our column count here. Grid
-        // layout itself still comes from style.css (WooCommerce's generated card markup, not ours).
-        echo '<div class="baiyar-bestseller-grid mt-4">';
+        // own product-grid CSS targets .products specifically and fought our column count here. This is
+        // a horizontally-scrolling carousel track, not a grid - see .baiyar-bestseller-grid in style.css.
+        echo '<div class="baiyar-carousel-track baiyar-bestseller-grid" data-carousel="bestsellers">';
         while ($bestsellers->have_posts()) :
             $bestsellers->the_post();
             wc_get_template_part('content', 'product');
