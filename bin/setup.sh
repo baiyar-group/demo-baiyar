@@ -6,6 +6,11 @@
 set -euo pipefail
 
 DEMO_PORT="${DEMO_PORT:-8080}"
+# A deployed demo sets DEMO_URL (https://demo.baiyar.com) and ADMIN_PASSWORD; locally the defaults below apply.
+DEMO_URL="${DEMO_URL:-http://localhost:${DEMO_PORT}}"
+ADMIN_USER="${ADMIN_USER:-admin}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-demo@baiyar.com}"
 cd /var/www/html
 
 echo "Waiting for the database..."
@@ -17,17 +22,17 @@ exec 3<&- 3>&-
 if ! wp core is-installed 2>/dev/null; then
   echo "Installing WordPress..."
   wp core install \
-    --url="http://localhost:${DEMO_PORT}" \
+    --url="${DEMO_URL}" \
     --title="Lapik" \
-    --admin_user=admin \
-    --admin_password=admin \
-    --admin_email=demo@baiyar.com \
+    --admin_user="${ADMIN_USER}" \
+    --admin_password="${ADMIN_PASSWORD}" \
+    --admin_email="${ADMIN_EMAIL}" \
     --skip-email
 fi
 
-echo "Pointing the site at the current DEMO_PORT..."
-wp option update siteurl "http://localhost:${DEMO_PORT}"
-wp option update home "http://localhost:${DEMO_PORT}"
+echo "Pointing the site at ${DEMO_URL}..."
+wp option update siteurl "${DEMO_URL}"
+wp option update home "${DEMO_URL}"
 
 # The store's own brand - Baiyar is the payment processor behind it, not the retailer (see
 # functions.php), so the site identity is never "Baiyar".
@@ -99,13 +104,13 @@ declare -A COLORS=(
 create_product() {
   local name="$1" price="$2" sku="$3" stock="$4" cat="$5" desc="$6" featured="$7" image="$8" sale_price="${9:-}"
   local id
-  id="$(wp wc product create --user=admin --porcelain \
+  id="$(wp wc product create --user="${ADMIN_USER}" --porcelain \
     --name="$name" --type=simple --regular_price="$price" --sku="$sku" \
     --manage_stock=true --stock_quantity="$stock" \
     --categories="[{\"id\":${cat}}]" --featured="$featured" \
     --short_description="$desc")"
   if [ -n "$sale_price" ]; then
-    wp wc product update "$id" --user=admin --sale_price="$sale_price" >/dev/null
+    wp wc product update "$id" --user="${ADMIN_USER}" --sale_price="$sale_price" >/dev/null
   fi
   wp media import "/setup/product-images/${image}" --post_id="$id" --featured_image
   local base="${image%.jpg}" gallery=""
@@ -159,5 +164,5 @@ wp menu location assign "Main Menu" handheld
 echo "Setting the homepage to the Baiyar Storefront front page template..."
 wp option update show_on_front posts
 
-echo "Done. Admin: http://localhost:${DEMO_PORT}/wp-admin (admin / admin)"
-echo "Store: http://localhost:${DEMO_PORT}/"
+echo "Done. Admin: ${DEMO_URL}/wp-admin (user ${ADMIN_USER})"
+echo "Store: ${DEMO_URL}/"

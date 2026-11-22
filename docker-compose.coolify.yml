@@ -1,0 +1,91 @@
+# The demo store on Coolify (demo.baiyar.com). The local file `docker-compose.yml` stays for laptops.
+#
+# Differences from the local file:
+#   - no published port: Coolify's proxy terminates HTTPS and forwards to `wordpress` (domain set on that service);
+#   - secrets come from Coolify environment variables, none are kept here:
+#       DB_PASSWORD, DB_ROOT_PASSWORD, ADMIN_PASSWORD, DEMO_URL (https://demo.baiyar.com),
+#       BAIYAR_API_KEY (bk_test_...), BAIYAR_PROJECT_ID (prj_...), optional BAIYAR_WEBHOOK_SECRET, BAIYAR_API_URL;
+#   - `provision` sets the store up once (WordPress, WooCommerce, theme, products, language) and then keeps the Baiyar
+#     settings in line with the environment on every deploy. It does not rebuild the catalog on later deploys.
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    expose:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      # Behind the proxy the request arrives as http: trust the forwarded scheme so WordPress builds https links,
+      # and keep the plugin/theme code editor out of wp-admin.
+      WORDPRESS_CONFIG_EXTRA: |
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+        define('DISALLOW_FILE_EDIT', true);
+        define('FORCE_SSL_ADMIN', true);
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins/baiyar-for-woocommerce:/var/www/html/wp-content/plugins/baiyar-for-woocommerce
+      - ./wp-content/themes/baiyar-storefront:/var/www/html/wp-content/themes/baiyar-storefront
+
+  # One-shot work done as a long-lived container so Coolify never sees an exited service: it provisions, then sleeps.
+  provision:
+    image: wordpress:cli-php8.2
+    restart: unless-stopped
+    # wordpress:apache (Debian) and wordpress:cli (Alpine) use different uids for www-data (33 vs 82).
+    user: "33:33"
+    depends_on:
+      - db
+      - wordpress
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      DEMO_URL: ${DEMO_URL:?set DEMO_URL}
+      ADMIN_USER: ${ADMIN_USER:-demoadmin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-demo@baiyar.com}
+      BAIYAR_API_KEY: ${BAIYAR_API_KEY:?set BAIYAR_API_KEY}
+      BAIYAR_PROJECT_ID: ${BAIYAR_PROJECT_ID:?set BAIYAR_PROJECT_ID}
+      BAIYAR_WEBHOOK_SECRET: ${BAIYAR_WEBHOOK_SECRET:-}
+      BAIYAR_API_URL: ${BAIYAR_API_URL:-}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-content/plugins/baiyar-for-woocommerce:/var/www/html/wp-content/plugins/baiyar-for-woocommerce
+      - ./wp-content/themes/baiyar-storefront:/var/www/html/wp-content/themes/baiyar-storefront
+      - ./bin:/setup
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        until [ -f /var/www/html/wp-config.php ]; do sleep 2; done
+        until (exec 3<>/dev/tcp/db/3306) 2>/dev/null; do sleep 2; done
+        if [ "$$(wp option get baiyar_demo_provisioned 2>/dev/null || true)" != "1" ]; then
+          bash /setup/setup.sh
+          wp option update baiyar_demo_provisioned 1
+        fi
+        # The admin password and the Baiyar settings follow the environment on every deploy.
+        wp user update "$$ADMIN_USER" --user_pass="$$ADMIN_PASSWORD" --skip-email >/dev/null
+        bash /setup/baiyar.sh
+        echo "provisioned: $$DEMO_URL"
+        exec sleep infinity
+
+volumes:
+  db_data:
+  wp_data:
