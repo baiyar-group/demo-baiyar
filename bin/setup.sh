@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run inside the `wpcli` container: docker compose run --rm wpcli bash /setup/setup.sh
-# Installs WordPress, WooCommerce, the Baiyar Storefront child theme, the Baiyar plugin stub, and sample
+# Installs WordPress, WooCommerce, the Baiyar Storefront child theme, the Baiyar plugin, and sample
 # products with working add-to-cart / cart / checkout pages (Storefront + WooCommerce provide all of
 # that out of the box; the child theme only restyles it with Baiyar's tokens and motion).
 set -euo pipefail
@@ -44,10 +44,10 @@ wp theme activate baiyar-storefront
 echo "Installing and activating WooCommerce..."
 wp plugin install woocommerce --activate
 
-echo "Activating the Baiyar plugin stub..."
+echo "Activating the Baiyar plugin..."
 wp plugin activate baiyar-for-woocommerce
 
-echo "Enabling the Baiyar gateway at checkout..."
+echo "Switching the Baiyar gateway on (it is offered at checkout once bin/baiyar.sh has connected it to a project)..."
 wp eval "update_option('woocommerce_baiyar_settings', ['enabled' => 'yes', 'title' => 'Baiyar', 'description' => 'Bayar dengan QRIS, virtual account, e-wallet, atau gerai retail.']);"
 
 echo "Installing the Indonesian language packs (WordPress, WooCommerce, Storefront)..."

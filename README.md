@@ -1,13 +1,13 @@
 # demo-baiyar
 
-A throwaway WooCommerce store to work out what a real `baiyar-for-woocommerce` plugin would need from
-Baiyar's Merchant API, before building it for real. Nothing here is wired up to Baiyar yet and nothing
-here accepts real payments.
+A throwaway WooCommerce store ("Lapik") for trying the
+[Baiyar for WooCommerce](https://github.com/baiyar-group/baiyar-for-woocommerce) plugin end to end: place an order, pay it
+on Baiyar's page in the sandbox, and see the order paid. It takes real payments only if you give it a live key.
 
 ## Why
 
-Baiyar's landing page already lists WooCommerce as a planned integration. Before building a plugin for
-real, this repo is a sandbox to answer open questions concretely:
+The repo began as a sandbox to work out what a real WooCommerce plugin would need from Baiyar's Merchant API. The plugin
+now exists (released as v0.1.0) and answered the questions below the way the notes at the bottom describe:
 
 - Hosted redirect (`checkout.baiyar.com`) vs. an inline/embedded checkout on the store's own page, or both.
 - What a line-item array (product name, qty, price) needs to look like on `CreatePaymentRequest` /
@@ -28,8 +28,8 @@ docker compose run --rm wpcli bash /setup/setup.sh
 Port 8080 taken? Set `DEMO_PORT` first, e.g. `DEMO_PORT=18080 docker compose up -d && DEMO_PORT=18080 docker compose run --rm wpcli bash /setup/setup.sh`.
 
 The second command installs WordPress, WooCommerce, the Baiyar Storefront child theme, activates
-"Baiyar for WooCommerce" (mounted from `wp-content/plugins/baiyar-for-woocommerce`), enables the Baiyar
-gateway, sets up a curated nav menu, and creates a 6-product catalog (sneakers + sandals, two
+"Baiyar for WooCommerce" (mounted from `wp-content/plugins/baiyar-for-woocommerce`), switches the Baiyar
+gateway on (it is offered at checkout once connected to a project, see below), sets up a curated nav menu, and creates a 6-product catalog (sneakers + sandals, two
 categories) in IDR with generated product photos. Takes under a minute.
 
 - Homepage: hero, a trust bar, two category tiles, a "Paling laris" (best sellers) grid, a brand-story
@@ -39,16 +39,37 @@ categories) in IDR with generated product photos. Takes under a minute.
   icon (don't hand-type a raw `?page_id=` URL for the shop - WooCommerce's shop-page detection only
   kicks in on the canonical `/shop/` URL once pretty permalinks are on).
 - Admin: `http://localhost:8080/wp-admin` (`admin` / `admin`)
-- Payment options at checkout already show "Baiyar" selected - the gateway is enabled by `setup.sh`.
+- Payment options at checkout show "Baiyar" once the store is connected to a Baiyar project (next section).
 
 Re-running `setup.sh` is safe: it wipes and regenerates the product catalog, menu and theme/plugin/
-currency/gateway settings every time, so it's always idempotent rather than silently drifting.
+currency/gateway settings every time, so it's always idempotent rather than silently drifting. That includes the
+connection to Baiyar, so run `bin/baiyar.sh` again afterwards.
+
+## Connect it to a Baiyar project
+
+You need a Baiyar project and a **sandbox** API key (`bk_test_...`) with the `payments:read` and `payments:write`
+permissions. Nothing secret is kept in this repo; pass the values when you run the script:
+
+```bash
+docker compose run --rm \
+  -e BAIYAR_API_KEY=bk_test_... -e BAIYAR_PROJECT_ID=prj_... \
+  wpcli bash /setup/baiyar.sh
+```
+
+Add a product to the cart and place the order: you land on Baiyar's page, where the sandbox has buttons to pay, fail or
+expire the payment, and after paying you come back to the store.
+
+To have Baiyar's webhook mark the order paid (instead of the store asking when you come back), add the address shown in
+`WooCommerce > Settings > Payments > Baiyar` as a webhook endpoint in the Baiyar dashboard, listening to `checkout.*`, and
+pass the secret it shows as `-e BAIYAR_WEBHOOK_SECRET=whsec_...`. Baiyar has to reach that address over https, so a store on
+`localhost` needs a tunnel for this step.
 
 ## What's here
 
-- `wp-content/plugins/baiyar-for-woocommerce/` - a plugin stub. `process_payment()` and the webhook
-  handler (`class-wc-gateway-baiyar.php`) are `TODO`s, not implemented - the point right now is the
-  store/checkout flow, not a working gateway.
+- `wp-content/plugins/baiyar-for-woocommerce/` - a copy of the released plugin (v0.1.0). Its source, issues and releases
+  live in the plugin's own repository; this folder is only what the demo store runs. To update it, copy the new release
+  over it.
+- `bin/baiyar.sh` - points the plugin at a Baiyar project from environment variables (see above).
 - `wp-content/themes/baiyar-storefront/` - a Storefront child theme restyled with Baiyar's own color,
   type, radius, shadow and motion tokens (hand-synced from `packages/ui/src/tokens.ts` in
   `baiyar-payment-platform` - see that repo's `baiyar-theming-ui` skill). The store's own brand is
@@ -180,5 +201,5 @@ method itself. Keep this split if either brand's content changes.
 
 ## Status
 
-Exploration only. See `baiyar-payment-platform`'s `demo/woocommerce-plugin` branch for the server-side
-notes this is paired with.
+A demo store for the plugin, not a product. See `baiyar-payment-platform`'s `demo/woocommerce-plugin` branch for the
+server-side notes this was paired with.
