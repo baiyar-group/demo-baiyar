@@ -5,6 +5,7 @@
 #   - secrets come from Coolify environment variables, none are kept here:
 #       DB_PASSWORD, DB_ROOT_PASSWORD, ADMIN_PASSWORD, DEMO_URL (https://demo.baiyar.com),
 #       BAIYAR_API_KEY (bk_test_...), BAIYAR_PROJECT_ID (prj_...), optional BAIYAR_WEBHOOK_SECRET, BAIYAR_API_URL;
+#   - nothing is bind-mounted: relative bind mounts arrive empty on Coolify, so `provision` is built with its files inside;
 #   - `provision` sets the store up once (WordPress, WooCommerce, theme, products, language) and then keeps the Baiyar
 #     settings in line with the environment on every deploy. It does not rebuild the catalog on later deploys.
 services:
@@ -39,12 +40,14 @@ services:
         define('FORCE_SSL_ADMIN', true);
     volumes:
       - wp_data:/var/www/html
-      - ./wp-content/plugins/baiyar-for-woocommerce:/var/www/html/wp-content/plugins/baiyar-for-woocommerce
-      - ./wp-content/themes/baiyar-storefront:/var/www/html/wp-content/themes/baiyar-storefront
 
   # One-shot work done as a long-lived container so Coolify never sees an exited service: it provisions, then sleeps.
   provision:
-    image: wordpress:cli-php8.2
+    # Built from Dockerfile.provision: setup scripts, plugin and theme are in the image. Bind mounts (./bin, ./wp-content/...)
+    # arrive empty on Coolify, so none are used.
+    build:
+      context: .
+      dockerfile: Dockerfile.provision
     restart: unless-stopped
     # wordpress:apache (Debian) and wordpress:cli (Alpine) use different uids for www-data (33 vs 82).
     user: "33:33"
@@ -66,9 +69,6 @@ services:
       BAIYAR_API_URL: ${BAIYAR_API_URL:-}
     volumes:
       - wp_data:/var/www/html
-      - ./wp-content/plugins/baiyar-for-woocommerce:/var/www/html/wp-content/plugins/baiyar-for-woocommerce
-      - ./wp-content/themes/baiyar-storefront:/var/www/html/wp-content/themes/baiyar-storefront
-      - ./bin:/setup
     command:
       - bash
       - -c
@@ -76,6 +76,10 @@ services:
         set -e
         until [ -f /var/www/html/wp-config.php ]; do sleep 2; done
         until (exec 3<>/dev/tcp/db/3306) 2>/dev/null; do sleep 2; done
+        # The plugin and theme live in this image; put the current copy into the volume on every deploy.
+        mkdir -p /var/www/html/wp-content/plugins/baiyar-for-woocommerce /var/www/html/wp-content/themes/baiyar-storefront
+        cp -a /payload/plugins/baiyar-for-woocommerce/. /var/www/html/wp-content/plugins/baiyar-for-woocommerce/
+        cp -a /payload/themes/baiyar-storefront/. /var/www/html/wp-content/themes/baiyar-storefront/
         if [ "$$(wp option get baiyar_demo_provisioned 2>/dev/null || true)" != "1" ]; then
           # WordPress installed but never provisioned means someone walked the browser install wizard first
           # (the address is public before this finishes): that site has the wrong admin, theme and title, so start clean.

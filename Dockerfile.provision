@@ -1,0 +1,6 @@
+# The provisioning sidecar of docker-compose.coolify.yml. Its files are baked into the image instead of bind-mounted:
+# on Coolify a relative bind mount (./bin, ./wp-content/...) arrives empty, so nothing could be found at /setup.
+FROM wordpress:cli-php8.2
+COPY bin /setup
+COPY wp-content/plugins/baiyar-for-woocommerce /payload/plugins/baiyar-for-woocommerce
+COPY wp-content/themes/baiyar-storefront /payload/themes/baiyar-storefront
