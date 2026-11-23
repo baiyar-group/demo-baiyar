@@ -39,7 +39,7 @@ services:
         define('DISALLOW_FILE_EDIT', true);
         define('FORCE_SSL_ADMIN', true);
     volumes:
-      - wp_data:/var/www/html
+      - wp_files:/var/www/html
 
   # One-shot work done as a long-lived container so Coolify never sees an exited service: it provisions, then sleeps.
   provision:
@@ -68,7 +68,7 @@ services:
       BAIYAR_WEBHOOK_SECRET: ${BAIYAR_WEBHOOK_SECRET:-}
       BAIYAR_API_URL: ${BAIYAR_API_URL:-}
     volumes:
-      - wp_data:/var/www/html
+      - wp_files:/var/www/html
     command:
       - bash
       - -c
@@ -103,4 +103,4 @@ services:
 
 volumes:
   db_data:
-  wp_data:
+  wp_files:
