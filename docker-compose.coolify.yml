@@ -77,6 +77,13 @@ services:
         until [ -f /var/www/html/wp-config.php ]; do sleep 2; done
         until (exec 3<>/dev/tcp/db/3306) 2>/dev/null; do sleep 2; done
         if [ "$$(wp option get baiyar_demo_provisioned 2>/dev/null || true)" != "1" ]; then
+          # WordPress installed but never provisioned means someone walked the browser install wizard first
+          # (the address is public before this finishes): that site has the wrong admin, theme and title, so start clean.
+          if wp core is-installed 2>/dev/null; then
+            echo "an install that was never provisioned is there: resetting the database"
+            # Through PHP, not `wp db reset`: that one shells out to a mysql client that refuses MySQL 8's self-signed certificate.
+            wp eval 'global $$wpdb; $$wpdb->query("SET FOREIGN_KEY_CHECKS=0"); foreach ($$wpdb->get_col("SHOW TABLES") as $$t) { $$wpdb->query("DROP TABLE `" . $$t . "`"); } $$wpdb->query("SET FOREIGN_KEY_CHECKS=1"); echo "tables dropped\n";'
+          fi
           bash /setup/setup.sh
           wp option update baiyar_demo_provisioned 1
         fi
