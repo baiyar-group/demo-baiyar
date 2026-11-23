@@ -17,6 +17,10 @@ services:
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
+    # A demo store on a shared server: a small MySQL (no performance schema, a small buffer pool) and a memory cap on
+    # every container, so a runaway demo stops its own container and not the server.
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=64M", "--max-connections=30"]
+    mem_limit: 512m
     volumes:
       - db_data:/var/lib/mysql
 
@@ -25,6 +29,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    mem_limit: 512m
     expose:
       - "80"
     environment:
@@ -51,6 +56,7 @@ services:
     restart: unless-stopped
     # wordpress:apache (Debian) and wordpress:cli (Alpine) use different uids for www-data (33 vs 82).
     user: "33:33"
+    mem_limit: 512m
     depends_on:
       - db
       - wordpress
