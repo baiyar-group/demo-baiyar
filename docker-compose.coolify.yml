@@ -74,10 +74,9 @@ services:
       - -c
       - |
         set -e
-        # Keep a copy of this log in the volume (readable at /provision.log while debugging) and say where it stopped.
-        exec > >(tee -a /var/www/html/provision.log) 2>&1
+        # The log was once copied into the volume for debugging, which is the web root: take that copy away.
+        rm -f /var/www/html/provision.log
         trap 'echo "provision stopped: line $$LINENO exit $$?"' ERR
-        echo "provision start $$(date -u +%FT%TZ) uid=$$(id -u)"
         until [ -f /var/www/html/wp-config.php ]; do sleep 2; done
         until (exec 3<>/dev/tcp/db/3306) 2>/dev/null; do sleep 2; done
         # The plugin and theme live in this image; put the current copy into the volume on every deploy.
